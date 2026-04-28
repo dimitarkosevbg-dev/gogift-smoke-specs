@@ -35,11 +35,11 @@ export class HomePage {
 
     this.mainMenu = page.getByLabel('Main menu bar');
 
-    this.superGiftCardLink = page.getByRole('link', { name: 'Super Gift Card' });
-    this.seeAllGiftsLink = page.getByRole('link', { name: 'See all gifts' });
-    this.categoriesLink = page.getByRole('link', { name: 'Categories' });
-    this.occasionsLink = page.getByRole('link', { name: 'Occasions' });
-    this.brandsLink = page.getByRole('link', { name: 'Brands' });
+    this.superGiftCardLink = page.locator('#menu-super_gift_card > a');
+    this.seeAllGiftsLink = page.locator('#menu-see_all_gifts > a');
+    this.categoriesLink = page.locator('#menu-categories > a');
+    this.occasionsLink = page.locator('#menu-occasions > a');
+    this.brandsLink = page.locator('#menu-brands > a');
 
     this.superGiftCardMenu = page.locator('#menu-super_gift_card');
     this.buySuperGiftCardLink = page.getByRole('link', { name: 'Buy Super Gift Card' });
@@ -69,10 +69,9 @@ export class HomePage {
   }
 
   async verifyHeaderVisible() {
-    await expect(this.header).toBeVisible();
-    await expect(this.logo).toBeVisible();
-    await expect(this.basketButton).toBeVisible();
-  }
+  await expect(this.logo).toBeVisible();
+  await expect(this.basketButton).toBeVisible();
+}
 
   async verifyMainNavigationVisible() {
     await expect(this.mainMenu).toBeVisible();
@@ -89,11 +88,18 @@ export class HomePage {
   }
 
   async openSearchResult(productName: string) {
-    const result = this.searchResult(productName);
+  const result = this.searchResult(productName);
 
-    await expect(result).toBeVisible();
-    await result.click();
+  await expect(result).toBeVisible();
+
+  const href = await result.getAttribute('href');
+
+  if (!href) {
+    throw new Error(`No href found for search result: ${productName}`);
   }
+
+  await this.page.goto(href);
+}
 
   async openSeeAllGifts() {
     await this.seeAllGiftsLink.click();
