@@ -43,12 +43,12 @@ The project follows a production-style automation structure:
 
 ### Smoke Tests
 - Critical user flow:
-  - Open homepage
-  - Search for a product
-  - Open product page
-  - Select value and delivery options
-  - Add to basket
-  - Navigate towards checkout (limited by Cloudflare)
+- Open homepage
+- Search for a product
+- Open product page
+- Select value and delivery options
+- Add to basket
+- Navigate towards checkout (limited by Cloudflare)
 
 ### Regression Tests
 
