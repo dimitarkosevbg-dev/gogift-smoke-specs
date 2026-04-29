@@ -4,6 +4,7 @@ export class ProductPage {
   readonly page: Page;
 
   readonly productTitle: Locator;
+  readonly deliveryMethodDropdown: Locator;
   readonly deliveryDateInput: Locator;
   readonly valueDropdown: Locator; 
   readonly recipientNameInput: Locator;
@@ -23,6 +24,7 @@ export class ProductPage {
     });
 
     this.deliveryDateInput = page.locator('input[name="datetime"]');
+    this.deliveryMethodDropdown = page.getByLabel('Delivery method');
     this.valueDropdown = page.locator('input[name="AutoSuggestOption"]');
     this.recipientNameInput = page.locator('input[name="recipientName"]');
     this.recipientEmailInput = page.locator('input[name="recipientEmail"]');
@@ -51,9 +53,9 @@ export class ProductPage {
     await expect(this.productTitle).toBeVisible();
   }
 
-  async selectDeliveryMethod(method: 'Email' | 'SMS' | 'Post') {
-    await this.deliveryMethod(method).click();
-  }
+  async selectDeliveryMethod(method: 'Email' | 'Sms' | 'Physical') {
+  await this.deliveryMethodDropdown.selectOption(method);
+}
 
   async selectDeliveryDate(date: string) {
 
@@ -106,4 +108,30 @@ async selectGiftCardValue(value: string) {
     await this.verifyBasketUpdatedModal();
     await this.goToBasketButton.click();
   }
+async verifyEmailDeliveryFieldsVisible() {
+  await expect(this.recipientNameInput).toBeVisible();
+  await expect(this.recipientEmailInput).toBeVisible();
+  await expect(this.recipientEmailRepeatInput).toBeVisible();
+}
+
+async verifySmsDeliveryFieldsVisible() {
+  await expect(this.recipientNameInput).toBeVisible();
+  await expect(
+    this.page.locator('input[name*="phone"], input[name*="mobile"], input[type="tel"]').first()
+  ).toBeVisible();
+}
+
+async verifyPostDeliveryFieldsVisible() {
+  await expect(
+    this.page.locator(
+      'input[name*="address"], input[name*="postal"], input[name*="city"], input[name*="zip"]'
+    ).first()
+  ).toBeVisible();
+}
+
+async verifySelectedDeliveryDate(expectedDate: string) {
+  await expect(this.deliveryDateInput).toHaveValue(expectedDate);
+}
+
+
 }

@@ -54,20 +54,7 @@ export class HomePage {
     await expect(this.logo).toBeVisible();
   }
 
-  async acceptCookies() {
-    const allowCookiesButton = this.page.getByRole('button', {
-      name: /allow all cookies/i,
-    });
-
-    if (await allowCookiesButton.isVisible().catch(() => false)) {
-      await allowCookiesButton.click();
-    }
-  }
-
-  async verifyHeaderVisible() {
-    await expect(this.logo).toBeVisible();
-    await expect(this.basketButton).toBeVisible();
-  }
+  
 
   async verifyMainNavigationVisible() {
     await expect(this.mainMenu).toBeVisible();
@@ -76,12 +63,6 @@ export class HomePage {
     await expect(this.categoriesLink).toBeVisible();
     await expect(this.occasionsLink).toBeVisible();
     await expect(this.brandsLink).toBeVisible();
-  }
-
-  async search(product: string) {
-    await expect(this.searchInput).toBeVisible();
-    await this.searchInput.click();
-    await this.searchInput.fill(product);
   }
 
   async openSearchResult(productName: string) {
