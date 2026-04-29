@@ -1,7 +1,7 @@
-import { test } from '@playwright/test';
-import { HomePage } from '../../../pages/HomePage';
-import { ProductPage } from '../../../pages/ProductPage';
-import { BasketPage } from '../../../pages/BasketPage';
+import { HomePage } from '../../pages/HomePage';
+import { ProductPage } from '../../pages/ProductPage';
+import { BasketPage } from '../../pages/BasketPage';
+import { test, expect } from '@playwright/test';
 
 test('Smoke: user can add Zalando gift card to basket and reach checkout entry', async ({ page }) => {
   const homePage = new HomePage(page);

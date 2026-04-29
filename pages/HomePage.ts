@@ -3,14 +3,11 @@ import { expect, Page, Locator } from '@playwright/test';
 export class HomePage {
   readonly page: Page;
 
-  // HEADER
-  readonly header: Locator;
   readonly logo: Locator;
   readonly menuButton: Locator;
   readonly basketButton: Locator;
   readonly businessLink: Locator;
 
-  // NAVIGATION
   readonly mainMenu: Locator;
   readonly superGiftCardLink: Locator;
   readonly seeAllGiftsLink: Locator;
@@ -21,13 +18,11 @@ export class HomePage {
   readonly buySuperGiftCardLink: Locator;
   readonly redeemSuperGiftCardLink: Locator;
 
-  // SEARCH
   readonly searchInput: Locator;
 
   constructor(page: Page) {
     this.page = page;
 
-    this.header = page.locator('header');
     this.logo = page.locator('#logo');
     this.menuButton = page.getByRole('button', { name: 'Menu' });
     this.basketButton = page.locator('#basketButton');
@@ -48,7 +43,7 @@ export class HomePage {
     this.searchInput = page.locator('#searchBox');
   }
 
-  searchResult(productName: string) {
+  searchResult(productName: string): Locator {
     return this.page.getByRole('link', {
       name: new RegExp(productName, 'i'),
     });
@@ -56,6 +51,7 @@ export class HomePage {
 
   async open() {
     await this.page.goto('https://shop.gogift.com/en/dk/dkk');
+    await expect(this.logo).toBeVisible();
   }
 
   async acceptCookies() {
@@ -69,9 +65,9 @@ export class HomePage {
   }
 
   async verifyHeaderVisible() {
-  await expect(this.logo).toBeVisible();
-  await expect(this.basketButton).toBeVisible();
-}
+    await expect(this.logo).toBeVisible();
+    await expect(this.basketButton).toBeVisible();
+  }
 
   async verifyMainNavigationVisible() {
     await expect(this.mainMenu).toBeVisible();
@@ -83,45 +79,53 @@ export class HomePage {
   }
 
   async search(product: string) {
+    await expect(this.searchInput).toBeVisible();
     await this.searchInput.click();
     await this.searchInput.fill(product);
   }
 
   async openSearchResult(productName: string) {
-  const result = this.searchResult(productName);
+    const result = this.searchResult(productName);
 
-  await expect(result).toBeVisible();
+    await expect(result).toBeVisible();
 
-  const href = await result.getAttribute('href');
+    const href = await result.getAttribute('href');
 
-  if (!href) {
-    throw new Error(`No href found for search result: ${productName}`);
+    if (!href) {
+      throw new Error(`No href found for search result: ${productName}`);
+    }
+
+    await this.page.goto(href);
   }
 
-  await this.page.goto(href);
-}
-
   async openSeeAllGifts() {
+    await expect(this.seeAllGiftsLink).toBeVisible();
     await this.seeAllGiftsLink.click();
   }
 
   async openBrands() {
+    await expect(this.brandsLink).toBeVisible();
     await this.brandsLink.click();
   }
 
   async openSuperGiftCardFromMenu() {
+    await expect(this.superGiftCardMenu).toBeVisible();
     await this.superGiftCardMenu.hover();
+
     await expect(this.buySuperGiftCardLink).toBeVisible();
     await this.buySuperGiftCardLink.click();
   }
 
   async openRedeemSuperGiftCardFromMenu() {
+    await expect(this.superGiftCardMenu).toBeVisible();
     await this.superGiftCardMenu.hover();
+
     await expect(this.redeemSuperGiftCardLink).toBeVisible();
     await this.redeemSuperGiftCardLink.click();
   }
 
   async openBasket() {
+    await expect(this.basketButton).toBeVisible();
     await this.basketButton.click();
   }
 }
