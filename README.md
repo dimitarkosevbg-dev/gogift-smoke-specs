@@ -1,14 +1,20 @@
-# Playwright QA Project – Gogift
+# GoGift QA Automation Project
 
 ## Tech Stack
 - Playwright (TypeScript)
 - Page Object Model
-- Fixtures
 
-## Test Coverage
-- Smoke tests (core flow)
-- Regression tests (search, basket, checkout entry)
+## Test Types
+- Smoke tests
+- Regression tests
 
-## How to run
-npx playwright test
-npx playwright test --grep @smoke
+## Smoke Flow
+- Open homepage
+- Search product
+- Open product
+- Add to basket
+- Validate basket
+
+## Notes
+- Cloudflare blocks payment step
+- Tests stop at checkout entry
