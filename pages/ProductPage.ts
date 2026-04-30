@@ -70,11 +70,21 @@ async selectGiftCardValue(value: string) {
 
   await this.valueDropdown.click();
 
-  const normalizedValue = value.replace(' ', '\\s*');
-  const option = this.page.getByText(new RegExp(normalizedValue, 'i')).first();
+  const escapedValue = value.replace(/\s+/g, '\\s+');
+
+  const option = this.page.getByRole('option', {
+    name: new RegExp(escapedValue, 'i'),
+  });
 
   await expect(option).toBeVisible({ timeout: 10000 });
   await option.click();
+
+  const numericValue = value.match(/\d+/)?.[0];
+
+  if (numericValue) {
+    await expect(this.valueDropdown).toHaveValue(new RegExp(numericValue));
+  }
+
 }
 
   async fillRecipientName(name: string) {
