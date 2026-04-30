@@ -1,6 +1,6 @@
 import { test, expect } from '../../utils/test-fixtures';
 
-test.describe('Basket Regression Tests', () => {
+test.describe(' @regression Basket Regression Tests', () => {
   test.beforeEach(async ({ homePage, header, productPage, basketPage, cookieBanner }) => {
     await homePage.open();
     await cookieBanner.acceptAllCookies();

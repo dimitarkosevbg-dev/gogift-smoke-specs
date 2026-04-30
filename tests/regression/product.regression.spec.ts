@@ -1,6 +1,6 @@
 import { test, expect } from '../../utils/test-fixtures';
 
-test.describe('Product Page Regression Tests', () => {
+test.describe(' @regression Product Page Regression Tests', () => {
   test.beforeEach(async ({ homePage, header, cookieBanner }) => {
     await homePage.open();
     await cookieBanner.acceptAllCookies();

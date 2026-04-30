@@ -1,6 +1,6 @@
 import { test } from '../../utils/test-fixtures';
 
-test('Critical user flow (up to Cloudflare)', async ({
+test('@smoke Critical user flow up to checkout boundary', async ({
   homePage,
   productPage,
   basketPage,

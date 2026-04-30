@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { expect, Page, Locator } from '@playwright/test';
 
 export class CookieBannerComponent {
   private acceptButton: Locator;
@@ -12,6 +12,7 @@ export class CookieBannerComponent {
   async acceptAllCookies() {
     if (await this.acceptButton.isVisible().catch(() => false)) {
       await this.acceptButton.click();
+      await expect(this.acceptButton).toBeHidden();
     }
   }
 }

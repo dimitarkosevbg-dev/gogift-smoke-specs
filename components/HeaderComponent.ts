@@ -13,7 +13,7 @@ export class HeaderComponent {
     this.redeemGiftCardLink = page.getByRole('link', { name: /redeem gift card/i });
     this.seeAllGiftsNavItem = page.getByText('See all gifts', { exact: true });
 
-    // 👇 добавяш locator-а тук
+   
     this.businessLink = page.locator(
       'header a[href="https://corporate.gogift.com"]'
     );
@@ -25,15 +25,17 @@ export class HeaderComponent {
     await expect(this.seeAllGiftsNavItem).toBeVisible();
   }
 
-  // 👇 ТУК добавяш метода
+
   async verifyBusinessLinkVisible() {
     await expect(this.businessLink).toBeVisible();
   }
 
   async search(productName: string) {
-    await this.searchInput.fill(productName);
-    await this.page.keyboard.press('Enter');
-  }
+  await this.searchInput.waitFor({ state: 'visible' });
+  await this.searchInput.click({ force: true }); // 🔥 ключово
+  await this.searchInput.fill(productName);
+  await this.page.keyboard.press('Enter');
+}
 
   async openRedeemGiftCardPage() {
     await this.redeemGiftCardLink.click();
