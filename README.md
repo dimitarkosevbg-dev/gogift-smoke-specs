@@ -42,13 +42,13 @@ The project follows a production-style automation design:
 
 ### Smoke Tests
 - Critical user flow:
-  - Open homepage
-  - Search for a product
-  - Open product page
-  - Select gift card value
-  - Select delivery method and fill required fields
-  - Add to basket
-  - Proceed to checkout (limited by Cloudflare)
+- Open homepage
+- Search for a product
+- Open product page
+- Select gift card value
+- Select delivery method and fill required fields
+- Add to basket
+- Proceed to checkout (limited by Cloudflare)
 
 ---
 
@@ -122,9 +122,9 @@ Open HTML report: npx playwright show-report
 ## Notes
 
 - The project includes handling of real-world UI challenges such as:
-  - Cookie consent overlays
-  - Dynamic dropdown components
-  - Non-standard DOM structures (e.g. custom value selectors)
+- Cookie consent overlays
+- Dynamic dropdown components
+- Non-standard DOM structures (e.g. custom value selectors)
 - Stable locators are used (name, label, semantic selectors) instead of fragile text-based selectors
 - Tests are designed to reflect actual product behavior rather than assumptions
 
