@@ -71,8 +71,16 @@ export class ProductPage {
   }
 
 async selectGiftCardValue(value: string) {
+  await expect(this.valueDropdown).toBeVisible();
+  await this.valueDropdown.scrollIntoViewIfNeeded();
+
   await this.valueDropdown.click();
-  await this.page.getByRole('option', { name: value }).click();
+
+  const normalizedValue = value.replace(' ', '\\s*');
+  const option = this.page.getByText(new RegExp(normalizedValue, 'i')).first();
+
+  await expect(option).toBeVisible({ timeout: 10000 });
+  await option.click();
 }
 
   async fillRecipientName(name: string) {

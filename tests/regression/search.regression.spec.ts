@@ -35,7 +35,7 @@ test.describe('@regression Search Regression Tests', () => {
 
   await header.search(searchTerm);
 
-  const results = page.locator('[data-testid="product-card"]'); // ако имаш такъв
+  const results = page.locator('[data-testid="product-card"]'); 
 
   const texts = await results.allTextContents();
 

@@ -5,7 +5,7 @@ export class HeaderComponent {
   private cartLink: Locator;
   private redeemGiftCardLink: Locator;
   private seeAllGiftsNavItem: Locator;
-  private businessLink: Locator; // 👈 добавяш това
+  private businessLink: Locator; 
 
   constructor(private page: Page) {
     this.searchInput = page.getByRole('searchbox', { name: /search products/i });
@@ -32,7 +32,7 @@ export class HeaderComponent {
 
   async search(productName: string) {
   await this.searchInput.waitFor({ state: 'visible' });
-  await this.searchInput.click({ force: true }); // 🔥 ключово
+  await this.searchInput.click({ force: true });
   await this.searchInput.fill(productName);
   await this.page.keyboard.press('Enter');
 }
