@@ -2,7 +2,7 @@
 
 This project contains automated end-to-end tests for https://shop.gogift.com.
 
-The goal is to demonstrate a real-world QA approach by combining manual test design with a structured automation framework using Playwright and TypeScript.
+The purpose of the project is to demonstrate a real-world QA approach by combining manual test design with a structured and maintainable automation framework using Playwright and TypeScript.
 
 ---
 
@@ -21,21 +21,20 @@ The goal is to demonstrate a real-world QA approach by combining manual test des
 pages/ Page Objects (HomePage, ProductPage, BasketPage)
 components/ Reusable UI components (Header, CookieBanner)
 tests/
-smoke/ Critical user flow
-regression/ Regression test suites
+├─ smoke/ Critical user flow tests
+├─ regression/ Regression test suites
 utils/ Fixtures and shared utilities
-
 
 ---
 
 ## Architecture
 
-The project follows a production-style automation structure:
+The project follows a production-style automation design:
 
-- Page Object Model is used to encapsulate page-specific logic
-- Components are used for reusable UI elements such as header and banners
-- Custom fixtures are used to manage test setup and dependencies
-- Test files contain only test logic, without direct selectors
+- Page Object Model is used to encapsulate UI logic and improve maintainability
+- Components are introduced for reusable elements such as header and cookie banner
+- Custom fixtures manage test setup and dependencies
+- Test files contain only business logic and assertions (no direct selectors)
 
 ---
 
@@ -43,39 +42,71 @@ The project follows a production-style automation structure:
 
 ### Smoke Tests
 - Critical user flow:
-- Open homepage
-- Search for a product
-- Open product page
-- Select value and delivery options
-- Add to basket
-- Navigate towards checkout (limited by Cloudflare)
+  - Open homepage
+  - Search for a product
+  - Open product page
+  - Select gift card value
+  - Select delivery method and fill required fields
+  - Add to basket
+  - Proceed to checkout (limited by Cloudflare)
+
+---
 
 ### Regression Tests
 
-Homepage
+#### Homepage
 - Page load validation
-- Header and navigation visibility
+- Header visibility
+- Navigation visibility
 - Search availability
 
-Search
-- Valid search
+#### Search
+- Valid search functionality
 - Case insensitivity
-- Leading and trailing spaces
-- No results behavior (fallback content)
+- Handling of leading/trailing spaces
+- No results fallback behavior
 - Navigation to product page from results
 
-Navigation
+#### Navigation
 - Main navigation visibility
 - Redeem page navigation
 - Business link visibility
 - Basket access
 
-Product Page
+#### Product Page
 - Page load validation
-- Gift card value selection
-- Delivery method handling (Email, SMS, Post)
+- Gift card value selection (dynamic dropdown handling)
+- Delivery method selection (Email, SMS, Post)
 - Field visibility based on delivery method
-- State persistence when switching delivery methods
+- Behavior validation when switching delivery methods
+
+#### Basket
+- Basket page load validation
+- Product visibility in basket
+- Terms acceptance
+- Ability to proceed to checkout
+
+#### Checkout (Partial)
+- Checkout step validation within basket page
+- Form visibility validation:
+- Full name
+- Address
+- Postal code
+- City
+- Phone number
+- Email
+
+---
+
+## Test Execution
+
+Run all tests: npx playwright test
+
+Run smoke tests: npx playwright test --grep "@regression"
+
+Run tests on specific browser: npx playwright test --project=chromium
+
+Open HTML report: npx playwright show-report
 
 ---
 
@@ -83,16 +114,20 @@ Product Page
 
 - Checkout flow is partially covered due to Cloudflare protection
 - Payment scenarios are not automated
-- Some UI elements rely on dynamic content and may require additional stabilization
+- Some UI elements are dynamic and require additional synchronization (e.g. dropdowns, overlays)
+- Responsive (mobile/tablet) behavior is not fully covered in regression suite
 
 ---
 
-## How to Run
+## Notes
 
-Run all tests: npx playwright test
+- The project includes handling of real-world UI challenges such as:
+  - Cookie consent overlays
+  - Dynamic dropdown components
+  - Non-standard DOM structures (e.g. custom value selectors)
+- Stable locators are used (name, label, semantic selectors) instead of fragile text-based selectors
+- Tests are designed to reflect actual product behavior rather than assumptions
 
-Run regression tests only:: npx playwright test tests/regression
-
-Reports : npx playwright show-report
+---
 
 
