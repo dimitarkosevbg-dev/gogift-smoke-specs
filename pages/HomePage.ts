@@ -66,17 +66,19 @@ export class HomePage {
   }
 
   async openSearchResult(productName: string) {
-    const result = this.searchResult(productName);
+  const result = this.page.getByRole('link', {
+    name: `${productName} product`,
+  });
 
-    await expect(result).toBeVisible();
+  await expect(result).toBeVisible({ timeout: 10000 });
 
-    const href = await result.getAttribute('href');
+  const href = await result.getAttribute('href');
 
-    if (!href) {
-      throw new Error(`No href found for search result: ${productName}`);
-    }
+  if (!href) {
+    throw new Error(`No href found for search result: ${productName}`);
+  }
 
-    await this.page.goto(href);
+  await this.page.goto(href);
   }
 
   async openSeeAllGifts() {

@@ -58,17 +58,11 @@ export class ProductPage {
 }
 
   async selectDeliveryDate(date: string) {
+  await this.page.getByText('Choose a date', { exact: true }).click();
 
-  await this.page.locator('text=Choose a date').click();
-
-  const dateInput = this.page.locator('input[name="datetime"]');
-  await dateInput.waitFor({ state: 'visible' });
-  await dateInput.fill(date);
+  await expect(this.deliveryDateInput).toBeVisible({ timeout: 10000 });
+  await this.deliveryDateInput.fill(date);
 }
-
-  async openValueDropdown() {
-    await this.addToCartButton.click();
-  }
 
 async selectGiftCardValue(value: string) {
   await expect(this.valueDropdown).toBeVisible();
