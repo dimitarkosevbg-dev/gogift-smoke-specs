@@ -100,13 +100,16 @@ The project follows a production-style automation design:
 
 ## Test Execution
 
-Run all tests: npx playwright test
+## Test Execution
 
-Run smoke tests: npx playwright test --grep "@regression"
+Install: `npm install`
+Install browsers: `npx playwright install`
 
-Run tests on specific browser: npx playwright test --project=chromium
-
-Open HTML report: npx playwright show-report
+Run all tests: `npm test`
+Run smoke tests: `npm run test:smoke`
+Run regression: `npm run test:regression`
+Run on specific browser: `npm run test:chromium`
+Open HTML report: `npm run report`
 
 ---
 

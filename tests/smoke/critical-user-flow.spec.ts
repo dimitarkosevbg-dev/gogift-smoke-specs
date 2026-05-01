@@ -1,6 +1,7 @@
 import { test } from '../../utils/test-fixtures';
 
-test('@smoke Critical user flow up to checkout boundary', async ({
+test.describe('@smoke', () => {
+test('Critical user flow up to checkout boundary', async ({
   homePage,
   productPage,
   basketPage,
@@ -25,4 +26,7 @@ test('@smoke Critical user flow up to checkout boundary', async ({
   await basketPage.verifyBasketLoaded();
   await basketPage.verifyProductIsVisible();
   await basketPage.acceptTerms();
+})
+
+
 });
