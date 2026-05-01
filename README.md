@@ -98,17 +98,22 @@ The project follows a production-style automation design:
 
 ---
 
-## Test Execution
+
 
 ## Test Execution
 
 Install: `npm install`
+
 Install browsers: `npx playwright install`
 
 Run all tests: `npm test`
+
 Run smoke tests: `npm run test:smoke`
+
 Run regression: `npm run test:regression`
+
 Run on specific browser: `npm run test:chromium`
+
 Open HTML report: `npm run report`
 
 ---
