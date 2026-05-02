@@ -9,11 +9,19 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
 
+  // Per-test timeout — increased for CI network variability
+  timeout: process.env.CI ? 60_000 : 30_000,
+  expect: {
+    timeout: process.env.CI ? 10_000 : 5_000,
+  },
+
   use: {
     baseURL: 'https://shop.gogift.com',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
+    // Navigation timeout — pages can be slow on CI
+    navigationTimeout: process.env.CI ? 30_000 : 15_000,
   },
 
   projects: [
