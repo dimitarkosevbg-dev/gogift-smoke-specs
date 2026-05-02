@@ -1,5 +1,7 @@
 # GoGift Shop — QA Automation Framework
 
+[![Playwright Tests](https://github.com/dimitarkosevbg-dev/gogift-smoke-specs/actions/workflows/playwright.yml/badge.svg)](https://github.com/dimitarkosevbg-dev/gogift-smoke-specs/actions/workflows/playwright.yml)
+
 End-to-end test automation for [shop.gogift.com](https://shop.gogift.com) built with Playwright and TypeScript.
 
 This project pairs a structured manual QA test suite (in Excel, 100+ test cases across 12 suites) with a production-style automation framework. The same test cases are covered across **four browser/device projects**: Chromium, Firefox, Mobile Chrome (Pixel 5), and iPad Mini — yielding **96 individual test runs per full regression cycle**.
