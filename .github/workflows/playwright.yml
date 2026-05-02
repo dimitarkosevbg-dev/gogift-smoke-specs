@@ -9,19 +9,28 @@ on:
 
 jobs:
   test:
-    name: Run Playwright tests
-    runs-on: ubuntu-latest
+    name: Run tests on ${{ matrix.project }}
     timeout-minutes: 30
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - chromium
+          - firefox
+          - 'Mobile Chrome'
+          - Tablet
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: 24
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -29,23 +38,23 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests
-        run: npm run test:regression
+      - name: Run regression tests on ${{ matrix.project }}
+        run: npx playwright test --grep @regression --project="${{ matrix.project }}"
         env:
           CI: true
 
-      - name: Upload HTML report
+      - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.project }}
           path: playwright-report/
-          retention-days: 14
+          retention-days: 30
 
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-${{ matrix.project }}
           path: test-results/
-          retention-days: 14
+          retention-days: 7
