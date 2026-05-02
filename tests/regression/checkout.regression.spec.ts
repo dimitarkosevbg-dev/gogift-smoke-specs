@@ -1,15 +1,16 @@
 import { test, expect } from '../../utils/test-fixtures';
+import { PRODUCTS, RECIPIENT, SEARCH_TERMS } from '../../fixtures/testData';
 
 test.describe('@regression Checkout Regression Tests', () => {
   test.beforeEach(async ({ homePage, header, productPage, basketPage, cookieBanner }) => {
     await homePage.open();
     await cookieBanner.acceptAllCookies();
 
-    await header.search('Zalando');
-    await homePage.openSearchResult('Zalando DK Gift Card');
+    await header.search(SEARCH_TERMS.validBrand);
+    await homePage.openSearchResult(PRODUCTS.zalandoDk.name);
 
-    await productPage.selectGiftCardValue('DKK 150');
-    await productPage.fillRecipientDetails('Test User', 'test@example.com');
+    await productPage.selectGiftCardValue(PRODUCTS.zalandoDk.defaultValue);
+    await productPage.fillRecipientDetails(RECIPIENT.name, RECIPIENT.email);
 
     await productPage.clickAddToBasket();
     await productPage.goToBasket();
@@ -22,11 +23,10 @@ test.describe('@regression Checkout Regression Tests', () => {
     await basketPage.verifyCheckoutEntryAvailable();
   });
 
- test('TC-097 | User can proceed towards checkout/payment step', async ({ basketPage }) => {
-  await basketPage.verifyCheckoutEntryAvailable();
-  await basketPage.checkoutButton.click();
+  test('TC-097 | User can proceed towards checkout/payment step', async ({ basketPage }) => {
+    await basketPage.verifyCheckoutEntryAvailable();
+    await basketPage.checkoutButton.click();
 
-  await basketPage.verifyCheckoutFormVisible();
-});
-
+    await basketPage.verifyCheckoutFormVisible();
+  });
 });

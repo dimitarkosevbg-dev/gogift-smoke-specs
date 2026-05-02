@@ -3,19 +3,27 @@
   "version": "1.0.0",
   "description": "End-to-end tests for shop.gogift.com using Playwright + TypeScript",
   "scripts": {
-    "test": "playwright test",
-    "test:smoke": "playwright test --grep @smoke",
-    "test:regression": "playwright test --grep @regression",
-    "test:chromium": "playwright test --project=chromium",
-    "test:headed": "playwright test --headed",
-    "report": "playwright show-report"
-  },
-  "keywords": ["playwright", "typescript", "qa", "e2e", "automation"],
+  "test": "playwright test",
+  "test:smoke": "playwright test --grep @smoke",
+  "test:regression": "playwright test --grep @regression",
+  "test:chromium": "playwright test --project=chromium",
+  "test:headed": "playwright test --headed",
+  "report": "playwright show-report",
+  "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit"
+},
+  "keywords": [
+    "playwright",
+    "typescript",
+    "qa",
+    "e2e",
+    "automation"
+  ],
   "author": "Dimitar Kosev",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
     "@playwright/test": "^1.59.1",
-    "@types/node": "^25.6.0"
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3"
   }
 }

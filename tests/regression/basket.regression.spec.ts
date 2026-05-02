@@ -1,15 +1,16 @@
 import { test, expect } from '../../utils/test-fixtures';
+import { PRODUCTS, RECIPIENT, SEARCH_TERMS } from '../../fixtures/testData';
 
 test.describe('@regression Basket Regression Tests', () => {
   test.beforeEach(async ({ homePage, header, productPage, basketPage, cookieBanner }) => {
     await homePage.open();
     await cookieBanner.acceptAllCookies();
 
-    await header.search('Zalando');
-    await homePage.openSearchResult('Zalando DK Gift Card');
+    await header.search(SEARCH_TERMS.validBrand);
+    await homePage.openSearchResult(PRODUCTS.zalandoDk.name);
 
-    await productPage.selectGiftCardValue('DKK 150');
-    await productPage.fillRecipientDetails('Test User', 'test@example.com');
+    await productPage.selectGiftCardValue(PRODUCTS.zalandoDk.defaultValue);
+    await productPage.fillRecipientDetails(RECIPIENT.name, RECIPIENT.email);
 
     await productPage.clickAddToBasket();
     await productPage.goToBasket();
@@ -25,9 +26,10 @@ test.describe('@regression Basket Regression Tests', () => {
     await basketPage.verifyProductIsVisible();
   });
 
-  test('TC-094 | Terms checkbox can be selected', async ({ basketPage }) => {
+  test('TC-094 | Accepting terms enables checkout', async ({ basketPage }) => {
     await basketPage.acceptTerms();
-    await expect(basketPage.termsCheckbox).toBeChecked();
+    await expect(basketPage.checkoutButton).toBeVisible();
+    await expect(basketPage.checkoutButton).toHaveText(/go to payment/i);
   });
 
   test('TC-095 | Checkout entry is available after accepting terms', async ({ basketPage }) => {

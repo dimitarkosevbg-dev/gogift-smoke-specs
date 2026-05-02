@@ -1,32 +1,28 @@
 import { test } from '../../utils/test-fixtures';
+import { SEARCH_TERMS, PRODUCTS, RECIPIENT } from '../../fixtures/testData';
+import { futureDate } from '../../utils/test-date';
 
 test.describe('@smoke', () => {
-test('Critical user flow up to checkout boundary', async ({
-  homePage,
-  productPage,
-  basketPage,
-  cookieBanner,
-  header,
-}) => {
-  await homePage.open();
-  await cookieBanner.acceptAllCookies();
+  test('Critical user flow up to checkout boundary', async ({
+    homePage, productPage, basketPage, cookieBanner, header,
+  }) => {
+    await homePage.open();
+    await cookieBanner.acceptAllCookies();
 
-  await header.verifyHeaderVisible();
+    await header.verifyHeaderVisible();
 
-  await header.search('zalando');
-  await homePage.openSearchResult('Zalando DK Gift Card');
+    await header.search(SEARCH_TERMS.validBrandLowercase);
+    await homePage.openSearchResult(PRODUCTS.zalandoDk.name);
 
-  await productPage.verifyProductPageLoaded();
-  await productPage.selectDeliveryDate('2026-05-01T10:00');
-  await productPage.selectGiftCardValue('DKK 150');
-  await productPage.fillRecipientDetails('Test User', 'test@example.com');
-  await productPage.clickAddToBasket();
-  await productPage.goToBasket();
+    await productPage.verifyProductPageLoaded();
+    await productPage.selectDeliveryDate(futureDate(7));
+    await productPage.selectGiftCardValue(PRODUCTS.zalandoDk.defaultValue);
+    await productPage.fillRecipientDetails(RECIPIENT.name, RECIPIENT.email);
+    await productPage.clickAddToBasket();
+    await productPage.goToBasket();
 
-  await basketPage.verifyBasketLoaded();
-  await basketPage.verifyProductIsVisible();
-  await basketPage.acceptTerms();
-})
-
-
+    await basketPage.verifyBasketLoaded();
+    await basketPage.verifyProductIsVisible();
+    await basketPage.acceptTerms();
+  });
 });
