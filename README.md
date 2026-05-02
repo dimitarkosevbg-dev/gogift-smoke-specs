@@ -1,141 +1,262 @@
-# GoGift Automation Testing Project (Playwright + TypeScript)
+# GoGift Shop — QA Automation Framework
 
-This project contains automated end-to-end tests for https://shop.gogift.com.
+End-to-end test automation for [shop.gogift.com](https://shop.gogift.com) built with Playwright and TypeScript.
 
-The purpose of the project is to demonstrate a real-world QA approach by combining manual test design with a structured and maintainable automation framework using Playwright and TypeScript.
+This project pairs a structured manual QA test suite (in Excel, 100+ test cases across 12 suites) with a production-style automation framework. The same test cases are covered across **four browser/device projects**: Chromium, Firefox, Mobile Chrome (Pixel 5), and iPad Mini — yielding **96 individual test runs per full regression cycle**.
+
+The automation work demonstrates real-world QA engineering: dealing with Cloudflare protection, dynamic React-based dropdowns, ReactModal drawers, responsive layouts that fundamentally restructure between desktop and mobile, and accessibility issues discovered during development.
 
 ---
 
 ## Tech Stack
 
-- Playwright
-- TypeScript
-- Page Object Model (POM)
-- Custom Fixtures
-- Component-based architecture
+- **[Playwright](https://playwright.dev)** `^1.59.1` — test runner & browser automation
+- **TypeScript** — strict typing across page objects, fixtures, and tests
+- **Node.js** `v24.x` — runtime
+- **Page Object Model (POM)** — encapsulates UI logic
+- **Component-based architecture** — reusable cross-page components (Header, CookieBanner)
+- **Custom fixtures** — dependency injection for page objects
 
 ---
 
 ## Project Structure
 
-pages/ Page Objects (HomePage, ProductPage, BasketPage)
-components/ Reusable UI components (Header, CookieBanner)
-tests/
-├─ smoke/ Critical user flow tests
-├─ regression/ Regression test suites
-utils/ Fixtures and shared utilities
+```
+gogift-smoke-specs/
+├── components/                 # Reusable UI components
+│   ├── HeaderComponent.ts      # Header with mobile-aware hamburger drawer
+│   └── CookieBannerComponent.ts
+├── pages/                      # Page Objects
+│   ├── HomePage.ts             # Mobile-aware navigation
+│   ├── ProductPage.ts          # Mobile-aware product form modal
+│   └── BasketPage.ts
+├── fixtures/
+│   └── testData.ts             # Centralized test data (URLs, search terms, recipients)
+├── tests/
+│   ├── smoke/
+│   │   └── critical-user-flow.spec.ts
+│   └── regression/
+│       ├── homepage.regression.spec.ts
+│       ├── navigation.regression.spec.ts
+│       ├── search.regression.spec.ts
+│       ├── product.regression.spec.ts
+│       ├── basket.regression.spec.ts
+│       └── checkout.regression.spec.ts
+├── utils/
+│   ├── test-fixtures.ts        # Custom Playwright fixtures
+│   ├── test-date.ts            # Dynamic date helpers (no hardcoded dates)
+│   ├── viewport.ts             # Mobile/desktop layout detection
+│   └── helpers.ts
+├── playwright.config.ts        # Multi-project config (4 browsers/devices)
+├── tsconfig.json
+└── package.json
+```
 
 ---
 
 ## Architecture
 
-The project follows a production-style automation design:
+The framework follows production-grade automation principles:
 
-- Page Object Model is used to encapsulate UI logic and improve maintainability
-- Components are introduced for reusable elements such as header and cookie banner
-- Custom fixtures manage test setup and dependencies
-- Test files contain only business logic and assertions (no direct selectors)
+- **Page Object Model** isolates locators and UI logic from test bodies. Tests read as business intent ("search for product, select value, add to basket") with no raw selectors.
+- **Components** wrap UI elements that appear across multiple pages (Header, CookieBanner) — avoiding duplication.
+- **Custom fixtures** in `utils/test-fixtures.ts` inject page objects into tests, eliminating boilerplate setup.
+- **Centralized test data** in `fixtures/testData.ts` — no magic strings scattered across spec files.
+- **Dynamic dates** via `utils/test-date.ts` — no hardcoded `2026-05-01` that silently expires.
+- **Stable locators** — `getByRole`, `getByLabel`, `getByText` preferred over CSS/XPath, with semantic ARIA attributes wherever the product exposes them.
 
 ---
 
 ## Test Coverage
 
-### Smoke Tests
-- Critical user flow:
-- Open homepage
-- Search for a product
-- Open product page
-- Select gift card value
-- Select delivery method and fill required fields
-- Add to basket
-- Proceed to checkout (limited by Cloudflare)
+### Smoke
+Critical purchase flow up to checkout boundary:
+- Open homepage → search → open product → select value → fill recipient → add to basket → verify basket loaded.
+
+### Regression — 6 spec files, 24 test cases
+
+**Homepage** (5 tests) — page load, header visibility, navigation, search input, gift card content.
+
+**Navigation** (5 tests) — main nav items, See all gifts, Redeem flow, Business link, basket access.
+
+**Search** (6 tests) — valid brand search, case insensitivity, leading/trailing whitespace, no-results scenario, exact match, click-through to product page.
+
+**Product Page** (4 tests) — page load, gift card value selection, delivery method field switching (Email/SMS/Post), preserved date across delivery method changes.
+
+**Basket** (4 tests) — page load, product visibility, terms acceptance enables checkout, checkout entry availability.
+
+**Checkout** (2 tests) — checkout button availability, checkout form fields visible (full name, address, postal code, city, phone, email).
+
+### Cross-browser × cross-device matrix
+
+Each test runs against 4 projects:
+
+| Project        | Viewport          | Notes                              |
+|----------------|-------------------|------------------------------------|
+| Chromium       | 1280×720          | Desktop reference                  |
+| Firefox        | 1280×720          | Desktop cross-engine               |
+| Mobile Chrome  | 393×851 (Pixel 5) | Touch-emulated, mobile DOM path    |
+| Tablet         | 768×1024 (iPad)   | Mobile DOM path (sub-1024px)       |
+
+**Total: 24 tests × 4 projects = 96 individual runs per regression cycle.**
 
 ---
 
-### Regression Tests
+## Mobile & Tablet Coverage
 
-#### Homepage
-- Page load validation
-- Header visibility
-- Navigation visibility
-- Search availability
+This is one of the more interesting parts of the framework. shop.gogift.com renders a fundamentally different DOM on mobile/tablet viewports — not just CSS resizing, but completely different elements:
 
-#### Search
-- Valid search functionality
-- Case insensitivity
-- Handling of leading/trailing spaces
-- No results fallback behavior
-- Navigation to product page from results
+- **Header**: desktop has a horizontal nav row with all links visible. Mobile collapses navigation behind a hamburger button (`aria-label="Menu"`) which opens a ReactModal drawer.
+- **Search**: desktop has a directly visible `<input>`. Mobile hides it behind an icon-only button that toggles the input's visibility.
+- **Product page**: desktop displays the order form alongside the product description. Mobile hides the form behind a sticky bottom "Choose" CTA, which opens it in a ReactModal.
+- **Navigation items** like Categories, Occasions, Brands are top-row links on desktop; on mobile they live inside accordion sections within the hamburger drawer.
 
-#### Navigation
-- Main navigation visibility
-- Redeem page navigation
-- Business link visibility
-- Basket access
+### Approach
 
-#### Product Page
-- Page load validation
-- Gift card value selection (dynamic dropdown handling)
-- Delivery method selection (Email, SMS, Post)
-- Field visibility based on delivery method
-- Behavior validation when switching delivery methods
+Rather than maintaining two parallel page object trees, the framework uses **viewport-aware branching** inside page objects via a single helper:
 
-#### Basket
-- Basket page load validation
-- Product visibility in basket
-- Terms acceptance
-- Ability to proceed to checkout
+```typescript
+// utils/viewport.ts
+export async function isMobileLayout(page: Page): Promise<boolean> {
+  const viewport = page.viewportSize();
+  if (!viewport) return false;
+  return viewport.width < 1024;
+}
+```
 
-#### Checkout (Partial)
-- Checkout step validation within basket page
-- Form visibility validation:
-- Full name
-- Address
-- Postal code
-- City
-- Phone number
-- Email
+Page objects then branch where layout differs:
+
+```typescript
+// HeaderComponent.ts (excerpt)
+async verifyHeaderVisible(): Promise<void> {
+  if (await isMobileLayout(this.page)) {
+    await expect(this.hamburgerButton).toBeVisible();
+    await expect(this.searchIconButton).toBeVisible();
+    await expect(this.cartLink).toBeVisible();
+  } else {
+    await expect(this.searchInput).toBeVisible();
+    await expect(this.desktopRedeemLink).toBeVisible();
+    await expect(this.desktopSeeAllGifts).toBeVisible();
+  }
+}
+```
+
+Tests stay clean and viewport-agnostic — they call `verifyHeaderVisible()` and the page object decides what "visible" means in context.
 
 ---
 
+## Setup
 
+### Prerequisites
 
-## Test Execution
+- Node.js v18 or later (developed on v24.x)
+- npm v9 or later
 
-Install: `npm install`
+### Installation
 
-Install browsers: `npx playwright install`
+```bash
+git clone https://github.com/dimitarkosevbg-dev/gogift-smoke-specs.git
+cd gogift-smoke-specs
+npm install
+npx playwright install
+```
 
-Run all tests: `npm test`
+The last step downloads Playwright's bundled browsers (Chromium, Firefox, WebKit).
 
-Run smoke tests: `npm run test:smoke`
+---
 
-Run regression: `npm run test:regression`
+## Running Tests
 
-Run on specific browser: `npm run test:chromium`
+```bash
+npm test                    # Full suite, all projects, parallel
+npm run test:smoke          # Smoke suite only
+npm run test:regression     # Regression suite only
+npm run test:chromium       # Chromium project only
+npm run test:headed         # Watch tests run in a visible browser
+npm run report              # Open the HTML report from the last run
+```
 
-Open HTML report: `npm run report`
+Project-specific run examples:
+
+```bash
+# Single project, single worker — useful for debugging
+npx playwright test --project=chromium --workers=1
+
+# Single test by name pattern
+npx playwright test --grep "TC-089"
+
+# UI mode — interactive test runner with timeline & DOM snapshots
+npx playwright test --ui
+```
+
+---
+
+## Test Reports
+
+Playwright generates an HTML report after every run. To view the most recent run:
+
+```bash
+npm run report
+```
+
+Reports include:
+- Pass/fail status per test, per project
+- Step-by-step timeline with screenshots on failure
+- Full DOM snapshots and trace viewer for debugging
+- Network logs for failed requests
+
+CI runs are configured to retry failed tests twice (configurable in `playwright.config.ts`).
 
 ---
 
 ## Known Limitations
 
-- Checkout flow is partially covered due to Cloudflare protection
-- Payment scenarios are not automated
-- Some UI elements are dynamic and require additional synchronization (e.g. dropdowns, overlays)
-- Responsive (mobile/tablet) behavior is not fully covered in regression suite
+- **Checkout flow is partial.** shop.gogift.com is protected by Cloudflare, which blocks automated traffic at the payment step. Tests verify availability and form rendering of the checkout entry but stop short of submitting payment.
+- **Payment scenarios are not automated.** Test cards and full transaction flow would require a sandbox environment access not publicly available.
+- **Some manual test cases (TC-061 redeem flow) require valid voucher codes** and are tracked as Blocked/Observed in the manual suite — they're documented but not automated, since there's no test data available.
 
 ---
 
-## Notes
+## Bugs Discovered
 
-- The project includes handling of real-world UI challenges such as:
-- Cookie consent overlays
-- Dynamic dropdown components
-- Non-standard DOM structures (e.g. custom value selectors)
-- Stable locators are used (name, label, semantic selectors) instead of fragile text-based selectors
-- Tests are designed to reflect actual product behavior rather than assumptions
+Real bugs found in production while building the framework:
+
+### BUG-013 — Mobile search icon button has no accessible name (Major / a11y)
+
+**Steps:** Open shop.gogift.com on a viewport ≤1024px. Inspect the magnifying-glass search icon in the header.
+
+**Expected:** Per WCAG 2.1 SC 4.1.2 (Name, Role, Value), the button should expose an accessible name — either via `aria-label="Search"` on the `<button>` element or non-empty `<title>Search</title>` inside the inner `<svg>`.
+
+**Actual:** Neither is present. Screen reader users have no way to identify the control.
+
+```html
+<button class="_1vQxL _1ETT4 _1XEkU _-2iWA" type="button">
+  <svg class="_2AACC" width="16" height="16" viewBox="0 0 1024 1024" fill="#2b3c47">
+    <title></title>  <!-- empty -->
+    <path d="..."></path>
+  </svg>
+</button>
+```
+
+This was discovered when `getByRole('button', { name: /search/i })` consistently failed on mobile — indicating the button literally had no role-name pair for assistive technologies. Notably, the adjacent hamburger button **does** have `aria-label="Menu"`, so the inconsistency points to a development oversight rather than a deliberate design decision.
+
+The framework works around this with a path-data locator, while the bug remains documented for product remediation.
+
+Other bugs are tracked in the project's manual QA Excel sheet (Bug Report tab).
 
 ---
 
+## Future Improvements
 
+- **CI workflow** — GitHub Actions pipeline running on every PR, with separate jobs per project for parallel speed
+- **Visual regression** — Playwright's `toHaveScreenshot` for catching unintended UI changes
+- **API-layer tests** — bypass Cloudflare to validate checkout logic at the API tier
+- **Dedicated mobile/tablet test cases** — for behaviour that's mobile-exclusive (hamburger interactions, sticky CTAs) rather than just running desktop tests on smaller viewports
+- **`.env` configuration** — environment-specific URLs for dev/staging runs
+- **ESLint + Prettier** — enforced code style across the project
+
+---
+
+## About
+
+Built by **[@dimitarkosevbg-dev](https://github.com/dimitarkosevbg-dev)** as a portfolio demonstration of QA engineering practice — combining manual test design, automation framework architecture, cross-browser/cross-device coverage, and real-world debugging of production sites.
