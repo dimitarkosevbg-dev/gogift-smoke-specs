@@ -1,6 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
-import { isMobileLayout } from '../utils/viewport';
-
+import { isMobileLayout, isMobileOrTabletLayout, getLayoutMode } from '../utils/viewport';
+import { dismissOverlaysIfPresent } from '../utils/dismissOverlays';
 export class HeaderComponent {
   private readonly page: Page;
 
@@ -52,41 +52,45 @@ export class HeaderComponent {
    * Verify that the page header is visible and contains the expected key elements.
    * Adapts to mobile/tablet (hamburger + search icon) vs desktop (full nav row).
    */
-  async verifyHeaderVisible(): Promise<void> {
-    if (await isMobileLayout(this.page)) {
-      await expect(this.hamburgerButton).toBeVisible();
-      await expect(this.searchIconButton).toBeVisible();
-      await expect(this.cartLink).toBeVisible();
-    } else {
-      await expect(this.searchInput).toBeVisible();
-      await expect(this.desktopRedeemLink).toBeVisible();
-      await expect(this.desktopSeeAllGifts).toBeVisible();
-    }
-  }
+ async verifyHeaderVisible(): Promise<void> {
+  const layout = getLayoutMode(this.page);
 
-  /**
-   * Verify the Business entry point is reachable.
-   * Desktop: header link to corporate.gogift.com.
-   * Mobile/Tablet: button inside the hamburger drawer.
-   */
+  if (layout === 'desktop') {
+    await expect(this.searchInput).toBeVisible();
+    await expect(this.desktopRedeemLink).toBeVisible();
+    await expect(this.desktopSeeAllGifts).toBeVisible();
+  } else if (layout === 'tablet') {
+    // Hybrid: desktop nav + icon-style search, no hamburger
+    await expect(this.desktopRedeemLink).toBeVisible();
+    await expect(this.searchIconButton).toBeVisible();
+    await expect(this.cartLink).toBeVisible();
+  } else {
+    // mobile
+    await expect(this.hamburgerButton).toBeVisible();
+    await expect(this.searchIconButton).toBeVisible();
+    await expect(this.cartLink).toBeVisible();
+  }
+}
+
   async verifyBusinessLinkVisible(): Promise<void> {
-    if (await isMobileLayout(this.page)) {
-      await this.openHamburgerDrawer();
-      const businessButton = this.menuDrawer.getByRole('link', { name: /business/i })
-        .or(this.menuDrawer.getByRole('button', { name: /business/i }));
-      await expect(businessButton.first()).toBeVisible();
-      await this.closeHamburgerDrawer();
-    } else {
-      await expect(this.desktopBusinessLink).toBeVisible();
-    }
-  }
+  const layout = getLayoutMode(this.page);
 
-  /**
-   * Search for a product. Handles both desktop (input visible) and
-   * mobile/tablet (input hidden behind a search icon).
-   */
+  if (layout === 'mobile') {
+    await this.openHamburgerDrawer();
+    const businessButton = this.menuDrawer.getByRole('link', { name: /business/i })
+      .or(this.menuDrawer.getByRole('button', { name: /business/i }));
+    await expect(businessButton.first()).toBeVisible();
+    await this.closeHamburgerDrawer();
+  } else {
+    // desktop & tablet — Business link is in the header
+    await expect(this.desktopBusinessLink).toBeVisible();
+  }
+}
+
   async search(productName: string): Promise<void> {
-  if (await isMobileLayout(this.page)) {
+  await dismissOverlaysIfPresent(this.page);
+
+  if (await isMobileOrTabletLayout(this.page)) {
     await this.searchIconButton.click();
   }
 
@@ -102,22 +106,21 @@ export class HeaderComponent {
    * uses the homepage CTA button (whichever is visible).
    */
   async openRedeemGiftCardPage(): Promise<void> {
-    if (await isMobileLayout(this.page)) {
-      // Prefer the homepage CTA "REDEEM SUPER GIFT CARD" button — it's a more
-      // realistic user path on mobile than navigating through the drawer.
-      const cta = this.page.getByRole('link', { name: /redeem super gift card/i });
-      if (await cta.isVisible().catch(() => false)) {
-        await cta.click();
-        return;
-      }
-      // Fallback: open hamburger and use Super Gift Card → Redeem
-      await this.openHamburgerDrawer();
-      const redeemInDrawer = this.menuDrawer.getByRole('link', { name: /redeem/i });
-      await redeemInDrawer.first().click();
-    } else {
-      await this.desktopRedeemLink.click();
+  if (await isMobileLayout(this.page)) {
+    // Mobile: prefer homepage CTA
+    const cta = this.page.getByRole('link', { name: /redeem super gift card/i });
+    if (await cta.isVisible().catch(() => false)) {
+      await cta.click();
+      return;
     }
+    await this.openHamburgerDrawer();
+    const redeemInDrawer = this.menuDrawer.getByRole('link', { name: /redeem/i });
+    await redeemInDrawer.first().click();
+  } else {
+    // desktop & tablet
+    await this.desktopRedeemLink.click();
   }
+}
 
   async openCart(): Promise<void> {
     await this.cartLink.click();
@@ -129,10 +132,10 @@ export class HeaderComponent {
    * Open the hamburger menu drawer. No-op on desktop.
    */
   async openHamburgerDrawer(): Promise<void> {
-    if (!(await isMobileLayout(this.page))) return;
-    await this.hamburgerButton.click();
-    await expect(this.menuDrawer).toBeVisible();
-  }
+  if (!(await isMobileLayout(this.page))) return;
+  await this.hamburgerButton.click();
+  await expect(this.menuDrawer).toBeVisible();
+}
 
   /**
    * Close the hamburger drawer if open. No-op if already closed.

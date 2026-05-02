@@ -11,7 +11,7 @@ export class HomePage {
   readonly basketButton: Locator;
   readonly businessLink: Locator;
 
-  // Desktop nav (top menu bar)
+  // Desktop / tablet nav (top menu bar)
   readonly mainMenu: Locator;
   readonly superGiftCardLink: Locator;
   readonly seeAllGiftsLink: Locator;
@@ -37,7 +37,7 @@ export class HomePage {
     this.basketButton = page.locator('#basketButton');
     this.businessLink = page.getByRole('link', { name: 'Business' });
 
-    // Desktop top menu
+    // Desktop / tablet top menu
     this.mainMenu = page.getByLabel('Main menu bar');
     this.superGiftCardLink = page.locator('#menu-super_gift_card > a');
     this.seeAllGiftsLink = page.locator('#menu-see_all_gifts > a');
@@ -70,35 +70,24 @@ export class HomePage {
 
   /**
    * Verify the main navigation is reachable.
-   * Desktop: top menu bar with all primary nav items.
-   * Mobile/Tablet: hamburger drawer contains the same items.
+   * Mobile (<768px): hamburger drawer contains the nav items.
+   * Desktop & Tablet (>=768px): top menu bar with all primary nav items.
    */
   async verifyMainNavigationVisible(): Promise<void> {
     if (await isMobileLayout(this.page)) {
       await this.openHamburgerDrawer();
 
-      // Drawer items are <a> or accordion buttons. Use semantic role + name.
       await expect(
-        this.menuDrawer.getByRole('link', { name: /see all gifts/i })
+        this.menuDrawer
+          .getByRole('link', { name: /see all gifts/i })
           .or(this.menuDrawer.getByText(/see all gifts/i))
           .first()
       ).toBeVisible();
 
-      await expect(
-        this.menuDrawer.getByText(/super gift card/i).first()
-      ).toBeVisible();
-
-      await expect(
-        this.menuDrawer.getByText(/categories/i).first()
-      ).toBeVisible();
-
-      await expect(
-        this.menuDrawer.getByText(/occasions/i).first()
-      ).toBeVisible();
-
-      await expect(
-        this.menuDrawer.getByText(/brands/i).first()
-      ).toBeVisible();
+      await expect(this.menuDrawer.getByText(/super gift card/i).first()).toBeVisible();
+      await expect(this.menuDrawer.getByText(/categories/i).first()).toBeVisible();
+      await expect(this.menuDrawer.getByText(/occasions/i).first()).toBeVisible();
+      await expect(this.menuDrawer.getByText(/brands/i).first()).toBeVisible();
 
       await this.closeHamburgerDrawer();
     } else {
@@ -109,21 +98,21 @@ export class HomePage {
       await expect(this.occasionsLink).toBeVisible();
       await expect(this.brandsLink).toBeVisible();
     }
-  
   }
+
   /**
- * Verify "See all gifts" entry point is reachable.
- * Desktop: top menu link. Mobile/Tablet: CTA on homepage OR drawer item.
- */
-async verifySeeAllGiftsVisible(): Promise<void> {
-  if (await isMobileLayout(this.page)) {
-    // On mobile, "SEE ALL GIFTS" is a prominent CTA on the homepage.
-    const cta = this.page.getByRole('link', { name: /^see all gifts$/i });
-    await expect(cta).toBeVisible();
-  } else {
-    await expect(this.seeAllGiftsLink).toBeVisible();
+   * Verify "See all gifts" entry point is reachable.
+   * Mobile: prominent CTA on the homepage.
+   * Desktop & Tablet: top menu link.
+   */
+  async verifySeeAllGiftsVisible(): Promise<void> {
+    if (await isMobileLayout(this.page)) {
+      const cta = this.page.getByRole('link', { name: /^see all gifts$/i });
+      await expect(cta).toBeVisible();
+    } else {
+      await expect(this.seeAllGiftsLink).toBeVisible();
+    }
   }
-}
 
   async openSearchResult(productName: string): Promise<void> {
     const result = this.page.getByRole('link', {
@@ -142,7 +131,6 @@ async verifySeeAllGiftsVisible(): Promise<void> {
 
   async openSeeAllGifts(): Promise<void> {
     if (await isMobileLayout(this.page)) {
-      // On mobile, "SEE ALL GIFTS" is a prominent CTA on the homepage.
       const cta = this.page.getByRole('link', { name: /^see all gifts$/i });
       await expect(cta).toBeVisible();
       await cta.click();
@@ -165,7 +153,6 @@ async verifySeeAllGiftsVisible(): Promise<void> {
 
   async openSuperGiftCardFromMenu(): Promise<void> {
     if (await isMobileLayout(this.page)) {
-      // On mobile, prefer the homepage "BUY SUPER GIFT CARD" CTA.
       const cta = this.page.getByRole('link', { name: /buy super gift card/i });
       await expect(cta).toBeVisible();
       await cta.click();
@@ -195,7 +182,7 @@ async verifySeeAllGiftsVisible(): Promise<void> {
     await this.basketButton.click();
   }
 
-  // ---- Mobile drawer helpers (mirror of HeaderComponent for HomePage usage) ----
+  // ---- Mobile drawer helpers ----
 
   private async openHamburgerDrawer(): Promise<void> {
     await this.hamburgerButton.click();

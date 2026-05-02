@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { isMobileLayout } from '../utils/viewport';
+import { dismissOverlaysIfPresent } from '../utils/dismissOverlays';
 
 export class ProductPage {
   readonly page: Page;
@@ -162,8 +163,9 @@ export class ProductPage {
   }
 
   async goToBasket(): Promise<void> {
-    await this.verifyBasketUpdatedModal();
-    await this.goToBasketButton.click();
+  await this.verifyBasketUpdatedModal();
+  await dismissOverlaysIfPresent(this.page);
+  await this.goToBasketButton.click();
   }
 
   async verifyEmailDeliveryFieldsVisible(): Promise<void> {
