@@ -6,7 +6,7 @@ End-to-end test automation for [shop.gogift.com](https://shop.gogift.com) built 
 
 This project pairs a structured manual QA test suite (in Excel, 100+ test cases across 12 suites) with a production-style automation framework. The same test cases are covered across **four browser/device projects**: Chromium, Firefox, Mobile Chrome (Pixel 5), and iPad Mini — yielding **96 individual test runs per full regression cycle**.
 
-The automation work demonstrates real-world QA engineering: dealing with Cloudflare protection, dynamic React-based dropdowns, ReactModal drawers, responsive layouts that fundamentally restructure between desktop and mobile, and accessibility issues discovered during development.
+The automation work demonstrates real-world QA engineering: dealing with Cloudflare protection, dynamic React-based dropdowns, ReactModal drawers, responsive layouts that fundamentally restructure between desktop and mobile, hybrid tablet layouts that mix desktop and mobile patterns, and accessibility issues discovered during development.
 
 ---
 
@@ -18,6 +18,7 @@ The automation work demonstrates real-world QA engineering: dealing with Cloudfl
 - **Page Object Model (POM)** — encapsulates UI logic
 - **Component-based architecture** — reusable cross-page components (Header, CookieBanner)
 - **Custom fixtures** — dependency injection for page objects
+- **GitHub Actions CI** — parallel matrix runs across all 4 viewport projects on every push and PR; separate report artifacts per project
 
 ---
 
@@ -25,12 +26,15 @@ The automation work demonstrates real-world QA engineering: dealing with Cloudfl
 
 ```
 gogift-smoke-specs/
+├── .github/
+│   └── workflows/
+│       └── playwright.yml      # GitHub Actions CI — parallel matrix per project
 ├── components/                 # Reusable UI components
-│   ├── HeaderComponent.ts      # Header with mobile-aware hamburger drawer
+│   ├── HeaderComponent.ts      # Layout-aware header (mobile / tablet / desktop)
 │   └── CookieBannerComponent.ts
 ├── pages/                      # Page Objects
-│   ├── HomePage.ts             # Mobile-aware navigation
-│   ├── ProductPage.ts          # Mobile-aware product form modal
+│   ├── HomePage.ts             # Layout-aware navigation
+│   ├── ProductPage.ts          # Layout-aware product form (modal on mobile, inline on tablet/desktop)
 │   └── BasketPage.ts
 ├── fixtures/
 │   └── testData.ts             # Centralized test data (URLs, search terms, recipients)
@@ -47,7 +51,8 @@ gogift-smoke-specs/
 ├── utils/
 │   ├── test-fixtures.ts        # Custom Playwright fixtures
 │   ├── test-date.ts            # Dynamic date helpers (no hardcoded dates)
-│   ├── viewport.ts             # Mobile/desktop layout detection
+│   ├── viewport.ts             # 3-way layout detection (mobile / tablet / desktop)
+│   ├── dismissOverlays.ts      # Defensive overlay dismissal helper
 │   └── helpers.ts
 ├── playwright.config.ts        # Multi-project config (4 browsers/devices)
 ├── tsconfig.json
@@ -66,6 +71,8 @@ The framework follows production-grade automation principles:
 - **Centralized test data** in `fixtures/testData.ts` — no magic strings scattered across spec files.
 - **Dynamic dates** via `utils/test-date.ts` — no hardcoded `2026-05-01` that silently expires.
 - **Stable locators** — `getByRole`, `getByLabel`, `getByText` preferred over CSS/XPath, with semantic ARIA attributes wherever the product exposes them.
+- **Three-way layout detection** — `utils/viewport.ts` exposes a `LayoutMode` enum (`'mobile' | 'tablet' | 'desktop'`) so page objects can branch correctly for the tablet hybrid layout, not just mobile vs. desktop.
+- **Defensive overlay dismissal** — `utils/dismissOverlays.ts` handles re-appearing cookie banners and B2B promotional popups that intercept clicks on certain viewports, particularly tablet.
 
 ---
 
@@ -93,12 +100,12 @@ Critical purchase flow up to checkout boundary:
 
 Each test runs against 4 projects:
 
-| Project        | Viewport          | Notes                              |
-|----------------|-------------------|------------------------------------|
-| Chromium       | 1280×720          | Desktop reference                  |
-| Firefox        | 1280×720          | Desktop cross-engine               |
-| Mobile Chrome  | 393×851 (Pixel 5) | Touch-emulated, mobile DOM path    |
-| Tablet         | 768×1024 (iPad)   | Mobile DOM path (sub-1024px)       |
+| Project        | Viewport          | Layout Mode  | Notes                                |
+|----------------|-------------------|--------------|--------------------------------------|
+| Chromium       | 1280×720          | desktop      | Desktop reference                    |
+| Firefox        | 1280×720          | desktop      | Desktop cross-engine                 |
+| Mobile Chrome  | 393×851 (Pixel 5) | mobile       | Hamburger drawer, modal product form |
+| Tablet         | 768×1024 (iPad)   | tablet       | Hybrid: desktop nav + icon search    |
 
 **Total: 24 tests × 4 projects = 96 individual runs per regression cycle.**
 
@@ -106,39 +113,59 @@ Each test runs against 4 projects:
 
 ## Mobile & Tablet Coverage
 
-This is one of the more interesting parts of the framework. shop.gogift.com renders a fundamentally different DOM on mobile/tablet viewports — not just CSS resizing, but completely different elements:
+This is one of the more interesting parts of the framework. shop.gogift.com renders three structurally different layouts depending on viewport — not just CSS resizing, but completely different DOM trees:
 
-- **Header**: desktop has a horizontal nav row with all links visible. Mobile collapses navigation behind a hamburger button (`aria-label="Menu"`) which opens a ReactModal drawer.
-- **Search**: desktop has a directly visible `<input>`. Mobile hides it behind an icon-only button that toggles the input's visibility.
-- **Product page**: desktop displays the order form alongside the product description. Mobile hides the form behind a sticky bottom "Choose" CTA, which opens it in a ReactModal.
-- **Navigation items** like Categories, Occasions, Brands are top-row links on desktop; on mobile they live inside accordion sections within the hamburger drawer.
+- **Desktop** (≥1024px): horizontal nav row, directly visible search input, product form alongside the description.
+- **Mobile** (<768px): navigation collapsed behind a hamburger button (`aria-label="Menu"`) opening a ReactModal drawer; search hidden behind an icon-only button; product form hidden behind a sticky bottom "Choose" CTA which opens it in a ReactModal.
+- **Tablet** (768–1023px): **hybrid layout** — full desktop nav row visible, but search uses the mobile-style icon button (no hamburger). Product form is inline like desktop.
 
 ### Approach
 
-Rather than maintaining two parallel page object trees, the framework uses **viewport-aware branching** inside page objects via a single helper:
+Rather than maintaining three parallel page object trees, the framework uses **layout-aware branching** inside page objects via a single helper exposing a three-way enum:
 
 ```typescript
 // utils/viewport.ts
-export async function isMobileLayout(page: Page): Promise<boolean> {
+export type LayoutMode = 'mobile' | 'tablet' | 'desktop';
+
+export function getLayoutMode(page: Page): LayoutMode {
   const viewport = page.viewportSize();
-  if (!viewport) return false;
-  return viewport.width < 1024;
+  if (!viewport) return 'desktop';
+  if (viewport.width < 768) return 'mobile';
+  if (viewport.width < 1024) return 'tablet';
+  return 'desktop';
+}
+
+export async function isMobileLayout(page: Page): Promise<boolean> {
+  return getLayoutMode(page) === 'mobile';
+}
+
+export async function isMobileOrTabletLayout(page: Page): Promise<boolean> {
+  const mode = getLayoutMode(page);
+  return mode === 'mobile' || mode === 'tablet';
 }
 ```
 
-Page objects then branch where layout differs:
+Page objects then branch where layouts differ:
 
 ```typescript
 // HeaderComponent.ts (excerpt)
 async verifyHeaderVisible(): Promise<void> {
-  if (await isMobileLayout(this.page)) {
-    await expect(this.hamburgerButton).toBeVisible();
-    await expect(this.searchIconButton).toBeVisible();
-    await expect(this.cartLink).toBeVisible();
-  } else {
+  const layout = getLayoutMode(this.page);
+
+  if (layout === 'desktop') {
     await expect(this.searchInput).toBeVisible();
     await expect(this.desktopRedeemLink).toBeVisible();
     await expect(this.desktopSeeAllGifts).toBeVisible();
+  } else if (layout === 'tablet') {
+    // Hybrid: desktop nav + icon-style search, no hamburger
+    await expect(this.desktopRedeemLink).toBeVisible();
+    await expect(this.searchIconButton).toBeVisible();
+    await expect(this.cartLink).toBeVisible();
+  } else {
+    // mobile
+    await expect(this.hamburgerButton).toBeVisible();
+    await expect(this.searchIconButton).toBeVisible();
+    await expect(this.cartLink).toBeVisible();
   }
 }
 ```
@@ -190,6 +217,21 @@ npx playwright test --grep "TC-089"
 # UI mode — interactive test runner with timeline & DOM snapshots
 npx playwright test --ui
 ```
+
+---
+
+## Continuous Integration
+
+The project runs on **GitHub Actions** with a parallel matrix strategy: each of the 4 Playwright projects (chromium, firefox, Mobile Chrome, Tablet) executes on its own runner simultaneously. Total CI time is around 7–8 minutes for the full 96-run regression cycle.
+
+Workflow triggers:
+- **Push to main** — full matrix runs on every commit
+- **Pull request to main** — gates merges behind passing tests
+- **Manual dispatch** — on-demand re-runs from the Actions tab
+
+Each matrix job uploads its own Playwright HTML report as a separate artifact (`playwright-report-chromium`, `playwright-report-Tablet`, etc.), retained for 30 days. On test failure, raw `test-results/` (screenshots, videos, traces) are also uploaded for a shorter 7-day retention.
+
+CI configuration: `.github/workflows/playwright.yml`.
 
 ---
 
@@ -250,11 +292,10 @@ Other bugs are tracked in the project's manual QA Excel sheet (Bug Report tab).
 
 ## Future Improvements
 
-- **CI workflow** — GitHub Actions pipeline running on every PR, with separate jobs per project for parallel speed
-- **Visual regression** — Playwright's `toHaveScreenshot` for catching unintended UI changes
-- **API-layer tests** — bypass Cloudflare to validate checkout logic at the API tier
-- **Dedicated mobile/tablet test cases** — for behaviour that's mobile-exclusive (hamburger interactions, sticky CTAs) rather than just running desktop tests on smaller viewports
-- **`.env` configuration** — environment-specific URLs for dev/staging runs
+- **Visual regression** — Playwright's `toHaveScreenshot` for catching unintended UI changes across viewports
+- **API-layer tests** — bypass Cloudflare to validate checkout logic at the API tier; complement E2E with faster, more reliable backend coverage
+- **Accessibility audit suite** — `@axe-core/playwright` integration to systematically catch accessibility issues like BUG-013
+- **Test sharding** — split each project's tests across multiple parallel workers within the same CI job, reducing run time further
 - **ESLint + Prettier** — enforced code style across the project
 
 ---
