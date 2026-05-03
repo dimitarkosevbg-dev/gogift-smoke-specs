@@ -6,7 +6,7 @@ End-to-end test automation for [shop.gogift.com](https://shop.gogift.com) built 
 
 This project pairs a structured manual QA test suite (in Excel, 100+ test cases across 12 suites) with a production-style automation framework. The same test cases are covered across **four browser/device projects**: Chromium, Firefox, Mobile Chrome (Pixel 5), and iPad Mini, yielding **96 individual test runs per full regression cycle**.
 
-The automation work demonstrates real-world QA engineering: dealing with Cloudflare protection, dynamic React-based dropdowns, ReactModal drawers, responsive layouts that fundamentally restructure between desktop and mobile, hybrid tablet layouts that mix desktop and mobile patterns, and accessibility issues discovered during development.
+The automation work demonstrates real-world QA engineering: dealing with Cloudflare protection, dynamic React-based dropdowns, ReactModal drawers, responsive layouts that fundamentally restructure between desktop and mobile, and hybrid tablet layouts that mix desktop and mobile patterns.
 
 ---
 
@@ -284,40 +284,11 @@ CI runs are configured to retry failed tests twice (configurable in `playwright.
 
 ---
 
-## Bugs Discovered
-
-Real bugs found in production while building the framework:
-
-### BUG-013: Mobile search icon button has no accessible name (Major / a11y)
-
-**Steps:** Open shop.gogift.com on a viewport ≤1024px. Inspect the magnifying-glass search icon in the header.
-
-**Expected:** Per WCAG 2.1 SC 4.1.2 (Name, Role, Value), the button should expose an accessible name, either via `aria-label="Search"` on the `<button>` element or non-empty `<title>Search</title>` inside the inner `<svg>`.
-
-**Actual:** Neither is present. Screen reader users have no way to identify the control.
-
-```html
-<button class="_1vQxL _1ETT4 _1XEkU _-2iWA" type="button">
-  <svg class="_2AACC" width="16" height="16" viewBox="0 0 1024 1024" fill="#2b3c47">
-    <title></title>  <!-- empty -->
-    <path d="..."></path>
-  </svg>
-</button>
-```
-
-This was discovered when `getByRole('button', { name: /search/i })` consistently failed on mobile, indicating the button literally had no role-name pair for assistive technologies. Notably, the adjacent hamburger button **does** have `aria-label="Menu"`, so the inconsistency points to a development oversight rather than a deliberate design decision.
-
-The framework works around this with a path-data locator, while the bug remains documented for product remediation.
-
-Other bugs are tracked in the project's manual QA Excel sheet (Bug Report tab).
-
----
-
 ## Future Improvements
 
 - **Visual regression**: Playwright's `toHaveScreenshot` for catching unintended UI changes across viewports
 - **API-layer tests**: bypass Cloudflare to validate checkout logic at the API tier; complement E2E with faster, more reliable backend coverage
-- **Accessibility audit suite**: `@axe-core/playwright` integration to systematically catch accessibility issues like BUG-013
+- **Accessibility audit suite**: `@axe-core/playwright` integration to systematically catch accessibility issues across the application
 - **Test sharding**: split each project's tests across multiple parallel workers within the same CI job, reducing run time further
 - **WebKit coverage**: currently testing on Chromium and Firefox engines; adding WebKit (Safari) would cover the third major browser engine
 
@@ -326,3 +297,5 @@ Other bugs are tracked in the project's manual QA Excel sheet (Bug Report tab).
 ## About
 
 Built by **[@dimitarkosevbg-dev](https://github.com/dimitarkosevbg-dev)** as a portfolio demonstration of QA engineering practice, combining manual test design, automation framework architecture, cross-browser/cross-device coverage, and real-world debugging of production sites.
+
+This README was drafted with the help of Claude (Anthropic), based on the actual project structure, code, debugging process, and architectural decisions made during development.
