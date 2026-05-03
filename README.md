@@ -4,7 +4,7 @@
 
 End-to-end test automation for [shop.gogift.com](https://shop.gogift.com) built with Playwright and TypeScript.
 
-This project pairs a structured [manual QA test suite](https://docs.google.com/spreadsheets/d/14mdxKIcPYD_1ZU9IFhaC9_uH20JfJy2w/edit?usp=sharing&ouid=113728637981988979355&rtpof=true&sd=true) (in Excel, 100+ test cases across 12 suites) with a production-style automation framework. The same test cases are covered across **four browser/device projects**: Chromium, Firefox, Mobile Chrome (Pixel 5), and iPad Mini, yielding **96 individual test runs per full regression cycle**.
+This project pairs a structured [manual QA test suite](https://docs.google.com/spreadsheets/d/14mdxKIcPYD_1ZU9IFhaC9_uH20JfJy2w/edit?usp=sharing&ouid=113728637981988979355&rtpof=true&sd=true) (100+ test cases across 12 suites) with a production-style automation framework. The same test cases are covered across **four browser/device projects**: Chromium, Firefox, Mobile Chrome (Pixel 5), and iPad Mini, yielding **96 individual test runs per full regression cycle**.
 
 The automation work demonstrates real-world QA engineering: dealing with Cloudflare protection, dynamic React-based dropdowns, ReactModal drawers, responsive layouts that fundamentally restructure between desktop and mobile, and hybrid tablet layouts that mix desktop and mobile patterns.
 
