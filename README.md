@@ -16,6 +16,7 @@ The automation work demonstrates real-world QA engineering: dealing with Cloudfl
 - **TypeScript** `^6.0.3`: strict typing across page objects, fixtures, and tests
 - **Node.js** `v24.x`: runtime
 - **GitHub Actions CI**: parallel matrix runs across all 4 viewport projects on every push and PR; separate report artifacts per project
+- **ESLint + Prettier**: TypeScript-aware linting and consistent code formatting; enforced as a CI gate before test execution
 
 ---
 
@@ -26,6 +27,8 @@ gogift-smoke-specs/
 ├── .github/
 │   └── workflows/
 │       └── playwright.yml      # GitHub Actions CI — parallel matrix per project
+├── .vscode/
+│   └── settings.json           # Workspace settings (format on save, ESLint integration)
 ├── components/                 # Reusable UI components
 │   ├── HeaderComponent.ts      # Layout-aware header (mobile / tablet / desktop)
 │   └── CookieBannerComponent.ts
@@ -51,6 +54,9 @@ gogift-smoke-specs/
 │   ├── viewport.ts             # 3-way layout detection (mobile / tablet / desktop)
 │   ├── dismissOverlays.ts      # Defensive overlay dismissal helper
 │   └── helpers.ts
+├── eslint.config.mjs           # ESLint flat config with Playwright plugin
+├── .prettierrc.json            # Prettier formatting rules
+├── .prettierignore             # Files Prettier should skip
 ├── playwright.config.ts        # Multi-project config (4 browsers/devices)
 ├── tsconfig.json
 └── package.json
@@ -201,6 +207,16 @@ npm run test:headed         # Watch tests run in a visible browser
 npm run report              # Open the HTML report from the last run
 ```
 
+### Code Quality
+
+```bash
+npm run lint                # Check for ESLint errors and warnings
+npm run lint:fix            # Auto-fix ESLint issues where possible
+npm run format              # Format all files with Prettier
+npm run format:check        # Check if files are formatted (CI-friendly)
+npm run typecheck           # Run TypeScript compiler in no-emit mode
+```
+
 Project-specific run examples:
 
 ```bash
@@ -218,13 +234,22 @@ npx playwright test --ui
 
 ## Continuous Integration
 
-The project runs on **GitHub Actions** with a parallel matrix strategy: each of the 4 Playwright projects (chromium, firefox, Mobile Chrome, Tablet) executes on its own runner simultaneously. Total CI time is around 6-8 minutes for the full 96-run regression cycle.
+The project runs on **GitHub Actions** with a parallel matrix strategy: each of the 4 Playwright projects (chromium, firefox, Mobile Chrome, Tablet) executes on its own runner simultaneously. Total CI time is around 7-8 minutes for the full 96-run regression cycle.
 
 Workflow triggers:
 
 - **Push to main**: full matrix runs on every commit
 - **Pull request to main**: gates merges behind passing tests
 - **Manual dispatch**: on-demand re-runs from the Actions tab
+
+CI flow per matrix job:
+
+1. Checkout repository
+2. Install Node.js and project dependencies
+3. Install Playwright browsers
+4. **Lint check**: fail fast if code is not lint-clean
+5. Run regression tests for the assigned project
+6. Upload Playwright HTML report and (on failure) `test-results/` as artifacts
 
 Each matrix job uploads its own Playwright HTML report as a separate artifact (`playwright-report-chromium`, `playwright-report-Tablet`, etc.), retained for 30 days. On test failure, raw `test-results/` (screenshots, videos, traces) are also uploaded for a shorter 7-day retention.
 
@@ -294,7 +319,7 @@ Other bugs are tracked in the project's manual QA Excel sheet (Bug Report tab).
 - **API-layer tests**: bypass Cloudflare to validate checkout logic at the API tier; complement E2E with faster, more reliable backend coverage
 - **Accessibility audit suite**: `@axe-core/playwright` integration to systematically catch accessibility issues like BUG-013
 - **Test sharding**: split each project's tests across multiple parallel workers within the same CI job, reducing run time further
-- **ESLint + Prettier**: enforced code style across the project
+- **WebKit coverage**: currently testing on Chromium and Firefox engines; adding WebKit (Safari) would cover the third major browser engine
 
 ---
 
