@@ -4,7 +4,11 @@ import { futureDate } from '../../utils/test-date';
 
 test.describe('@smoke', () => {
   test('Critical user flow up to checkout boundary', async ({
-    homePage, productPage, basketPage, cookieBanner, header,
+    homePage,
+    productPage,
+    basketPage,
+    cookieBanner,
+    header,
   }) => {
     await homePage.open();
     await cookieBanner.acceptAllCookies();

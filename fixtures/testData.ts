@@ -28,4 +28,3 @@ export const RECIPIENT = {
   name: 'Test User',
   email: 'test@example.com',
 } as const;
-

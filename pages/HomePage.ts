@@ -81,7 +81,7 @@ export class HomePage {
         this.menuDrawer
           .getByRole('link', { name: /see all gifts/i })
           .or(this.menuDrawer.getByText(/see all gifts/i))
-          .first()
+          .first(),
       ).toBeVisible();
 
       await expect(this.menuDrawer.getByText(/super gift card/i).first()).toBeVisible();

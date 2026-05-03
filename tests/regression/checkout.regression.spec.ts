@@ -1,4 +1,4 @@
-import { test, expect } from '../../utils/test-fixtures';
+import { test } from '../../utils/test-fixtures';
 import { PRODUCTS, RECIPIENT, SEARCH_TERMS } from '../../fixtures/testData';
 
 test.describe('@regression Checkout Regression Tests', () => {

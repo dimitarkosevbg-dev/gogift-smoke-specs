@@ -17,9 +17,7 @@ export async function dismissOverlaysIfPresent(page: Page): Promise<void> {
     const acceptButton = page.getByRole('button', { name: /allow all cookies/i });
     if (await acceptButton.isVisible().catch(() => false)) {
       await acceptButton.click();
-      await cookieDialog
-        .waitFor({ state: 'hidden', timeout: 5_000 })
-        .catch(() => undefined);
+      await cookieDialog.waitFor({ state: 'hidden', timeout: 5_000 }).catch(() => undefined);
     }
   }
 
@@ -32,9 +30,7 @@ export async function dismissOverlaysIfPresent(page: Page): Promise<void> {
     const closeButton = b2bDialog.locator('button').first();
     if (await closeButton.isVisible().catch(() => false)) {
       await closeButton.click();
-      await b2bDialog
-        .waitFor({ state: 'hidden', timeout: 5_000 })
-        .catch(() => undefined);
+      await b2bDialog.waitFor({ state: 'hidden', timeout: 5_000 }).catch(() => undefined);
     }
   }
 }

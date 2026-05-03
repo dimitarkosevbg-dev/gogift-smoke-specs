@@ -26,9 +26,9 @@ export class ProductPage {
     this.page = page;
 
     this.productTitle = page.getByRole('heading', {
-  level: 1,
-  name: /Zalando DK Gift Card/i,
-});
+      level: 1,
+      name: /Zalando DK Gift Card/i,
+    });
 
     this.deliveryDateInput = page.locator('input[name="datetime"]');
     this.deliveryMethodDropdown = page.getByLabel('Delivery method');
@@ -71,16 +71,16 @@ export class ProductPage {
   }
 
   async openMobileProductForm(): Promise<void> {
-  if (!(await isMobileLayout(this.page))) return;
+    if (!(await isMobileLayout(this.page))) return;
 
-  const modalOpen = await this.productFormModal.isVisible().catch(() => false);
-  if (modalOpen) return;
+    const modalOpen = await this.productFormModal.isVisible().catch(() => false);
+    if (modalOpen) return;
 
-  await expect(this.mobileChooseButton).toBeVisible();
-  await this.mobileChooseButton.click();
-  await expect(this.productFormModal).toBeVisible({ timeout: 10_000 });
-  await expect(this.valueDropdown).toBeVisible({ timeout: 10_000 });
-}
+    await expect(this.mobileChooseButton).toBeVisible();
+    await this.mobileChooseButton.click();
+    await expect(this.productFormModal).toBeVisible({ timeout: 10_000 });
+    await expect(this.valueDropdown).toBeVisible({ timeout: 10_000 });
+  }
 
   async selectDeliveryMethod(method: 'Email' | 'Sms' | 'Physical'): Promise<void> {
     await this.openMobileProductForm();
@@ -95,40 +95,43 @@ export class ProductPage {
   }
 
   async selectGiftCardValue(value: string): Promise<void> {
-  await this.openMobileProductForm();
+    await this.openMobileProductForm();
 
-  await expect(this.valueDropdown).toBeVisible();
-  await this.valueDropdown.scrollIntoViewIfNeeded();
+    await expect(this.valueDropdown).toBeVisible();
+    await this.valueDropdown.scrollIntoViewIfNeeded();
 
-  const escapedValue = value.replace(/\s+/g, '\\s+');
-  const optionRegex = new RegExp(escapedValue, 'i');
+    const escapedValue = value.replace(/\s+/g, '\\s+');
+    const optionRegex = new RegExp(escapedValue, 'i');
 
-  const ariaOption = this.page.getByRole('option', { name: optionRegex });
-  const textOption = this.page.locator('[role="listbox"]').getByText(optionRegex).first();
-  const optionLocator = ariaOption.or(textOption).first();
+    const ariaOption = this.page.getByRole('option', { name: optionRegex });
+    const textOption = this.page.locator('[role="listbox"]').getByText(optionRegex).first();
+    const optionLocator = ariaOption.or(textOption).first();
 
-  // Open dropdown — retry up to 3 times if options don't appear (autosuggest flake).
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    await this.valueDropdown.click();
+    // Open dropdown — retry up to 3 times if options don't appear (autosuggest flake).
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      await this.valueDropdown.click();
 
-    try {
-      await expect(optionLocator).toBeVisible({ timeout: 5_000 });
-      break;
-    } catch {
-      if (attempt === 3) throw new Error(`Value dropdown options never appeared after 3 attempts for value "${value}"`);
-      // Close and retry: click elsewhere, then re-click the input.
-      await this.page.keyboard.press('Escape');
-      await this.page.waitForTimeout(300);
+      try {
+        await expect(optionLocator).toBeVisible({ timeout: 5_000 });
+        break;
+      } catch {
+        if (attempt === 3)
+          throw new Error(
+            `Value dropdown options never appeared after 3 attempts for value "${value}"`,
+          );
+        // Close and retry: click elsewhere, then re-click the input.
+        await this.page.keyboard.press('Escape');
+        await this.page.waitForTimeout(300);
+      }
+    }
+
+    await optionLocator.click();
+
+    const numericValue = value.match(/\d+/)?.[0];
+    if (numericValue) {
+      await expect(this.valueDropdown).toHaveValue(new RegExp(numericValue));
     }
   }
-
-  await optionLocator.click();
-
-  const numericValue = value.match(/\d+/)?.[0];
-  if (numericValue) {
-    await expect(this.valueDropdown).toHaveValue(new RegExp(numericValue));
-  }
-}
 
   async fillRecipientName(name: string): Promise<void> {
     await this.openMobileProductForm();
@@ -163,9 +166,9 @@ export class ProductPage {
   }
 
   async goToBasket(): Promise<void> {
-  await this.verifyBasketUpdatedModal();
-  await dismissOverlaysIfPresent(this.page);
-  await this.goToBasketButton.click();
+    await this.verifyBasketUpdatedModal();
+    await dismissOverlaysIfPresent(this.page);
+    await this.goToBasketButton.click();
   }
 
   async verifyEmailDeliveryFieldsVisible(): Promise<void> {
@@ -179,9 +182,7 @@ export class ProductPage {
     await this.openMobileProductForm();
     await expect(this.recipientNameInput).toBeVisible();
     await expect(
-      this.page
-        .locator('input[name*="phone"], input[name*="mobile"], input[type="tel"]')
-        .first()
+      this.page.locator('input[name*="phone"], input[name*="mobile"], input[type="tel"]').first(),
     ).toBeVisible();
   }
 
@@ -189,8 +190,10 @@ export class ProductPage {
     await this.openMobileProductForm();
     await expect(
       this.page
-        .locator('input[name*="address"], input[name*="postal"], input[name*="city"], input[name*="zip"]')
-        .first()
+        .locator(
+          'input[name*="address"], input[name*="postal"], input[name*="city"], input[name*="zip"]',
+        )
+        .first(),
     ).toBeVisible();
   }
 

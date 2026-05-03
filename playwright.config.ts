@@ -33,17 +33,14 @@ export default defineConfig({
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
-    
-    
 
-    
     {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },         // 375px
+      use: { ...devices['Pixel 5'] }, // 375px
     },
     {
       name: 'Tablet',
-      use: { ...devices['iPad Mini'] },        // 768px
+      use: { ...devices['iPad Mini'] }, // 768px
     },
   ],
 });
