@@ -97,9 +97,6 @@ export class ProductPage {
   async selectGiftCardValue(value: string): Promise<void> {
     await this.openMobileProductForm();
 
-    await expect(this.valueDropdown).toBeVisible();
-    await this.valueDropdown.scrollIntoViewIfNeeded();
-
     const escapedValue = value.replace(/\s+/g, '\\s+');
     const optionRegex = new RegExp(escapedValue, 'i');
 
@@ -107,29 +104,31 @@ export class ProductPage {
     const textOption = this.page.locator('[role="listbox"]').getByText(optionRegex).first();
     const optionLocator = ariaOption.or(textOption).first();
 
-    // Open dropdown — retry up to 3 times if options don't appear (autosuggest flake).
     for (let attempt = 1; attempt <= 3; attempt++) {
-      await this.valueDropdown.click();
+      const valueInput = this.page.locator('input[name="AutoSuggestOption"]').first();
+
+      await expect(valueInput).toBeVisible({ timeout: 10_000 });
+      await valueInput.click();
 
       try {
         await expect(optionLocator).toBeVisible({ timeout: 5_000 });
+        await optionLocator.click();
         break;
       } catch {
-        if (attempt === 3)
-          throw new Error(
-            `Value dropdown options never appeared after 3 attempts for value "${value}"`,
-          );
-        // Close and retry: click elsewhere, then re-click the input.
+        if (attempt === 3) {
+          throw new Error(`Value dropdown option "${value}" was not selectable after 3 attempts`);
+        }
+
         await this.page.keyboard.press('Escape');
         await this.page.waitForTimeout(300);
       }
     }
 
-    await optionLocator.click();
-
     const numericValue = value.match(/\d+/)?.[0];
     if (numericValue) {
-      await expect(this.valueDropdown).toHaveValue(new RegExp(numericValue));
+      await expect(this.page.locator('input[name="AutoSuggestOption"]').first()).toHaveValue(
+        new RegExp(numericValue),
+      );
     }
   }
 
@@ -199,5 +198,12 @@ export class ProductPage {
 
   async verifySelectedDeliveryDate(expectedDate: string): Promise<void> {
     await expect(this.deliveryDateInput).toHaveValue(expectedDate);
+  }
+  async verifyDateFieldIsRemoved(): Promise<void> {
+    // shop.gogift.com removes the entire date section from the DOM when
+    // delivery method switches to SMS or Post — not just emptying the
+    // value, but unmounting the input altogether. Use toHaveCount(0)
+    // rather than toHaveValue('') to assert this correctly.
+    await expect(this.deliveryDateInput).toHaveCount(0);
   }
 }

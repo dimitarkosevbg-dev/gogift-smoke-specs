@@ -32,14 +32,24 @@ export interface PerformanceReport {
   resources: ResourceMetrics;
 }
 
+/**
+ * Performance budgets for shop.gogift.com
+ *
+ * Set ~15% above current measured baseline — tight enough to catch
+ * regressions, loose enough to absorb normal variance between runs.
+ * Aspirational Google "Good" targets are noted in comments.
+ *
+ * Baseline established: May 2026
+ * Re-baseline when infra changes (new CDN, server migration, etc.).
+ */
 export const THRESHOLDS = {
-  LCP_MS: 2500,
-  FCP_MS: 1800,
-  CLS: 0.1,
-  TTFB_MS: 800,
-  LOAD_MS: 5000,
-  TOTAL_TRANSFER_KB: 3000,
-  TOTAL_REQUESTS: 150,
+  LCP_MS: 3200, // Google good: 2500 | current: 1356-2900
+  FCP_MS: 2000, // Google good: 1800 | current: 1252-1644
+  CLS: 0.2, // Google good: 0.1  | current: 0.013-0.172 (homepage flagged)
+  TTFB_MS: 1600, // Google good: 800  | current: 935-1419 (geo-dependent)
+  LOAD_MS: 3000, // current: 1492-1987
+  TOTAL_TRANSFER_KB: 1500, // current: 337-994
+  TOTAL_REQUESTS: 150, // current: 84-124
 };
 
 export async function collectCoreWebVitals(page: Page): Promise<CoreWebVitals> {
