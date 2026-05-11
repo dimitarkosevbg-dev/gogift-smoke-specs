@@ -7,7 +7,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: [['html'], ['list']],
+
+  // Reporter:
+  //  - In CI: 'blob' so shards produce mergeable fragments (consolidated
+  //    into one HTML report by the merge-reports CI job)
+  //  - Locally: 'html' + 'list' for normal interactive dev
+  reporter: process.env.CI ? [['blob'], ['list']] : [['html'], ['list']],
 
   use: {
     baseURL: 'https://shop.gogift.com',
@@ -52,6 +57,7 @@ export default defineConfig({
 
     // ─────────────────────────────────────────────
     // VISUAL REGRESSION
+    // Not sharded — deterministic single-browser run
     // ─────────────────────────────────────────────
     {
       name: 'visual',
@@ -69,6 +75,7 @@ export default defineConfig({
 
     // ─────────────────────────────────────────────
     // PERFORMANCE BENCHMARKS
+    // Not sharded — parallel workers would invalidate metrics
     // ─────────────────────────────────────────────
     {
       name: 'performance',
