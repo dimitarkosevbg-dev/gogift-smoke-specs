@@ -1,38 +1,34 @@
 {
-  "name": "gogift-shop-qa-automation",
-  "version": "1.0.0",
-  "description": "End-to-end tests for shop.gogift.com using Playwright + TypeScript",
+  "name": "gogift-smoke.spec.ts",
+  "version": "1.1.0",
+  "description": "End-to-end QA automation for shop.gogift.com — Playwright + TypeScript with visual regression and performance benchmarks.",
+  "main": "index.js",
   "scripts": {
     "test": "playwright test",
     "test:smoke": "playwright test --grep @smoke",
     "test:regression": "playwright test --grep @regression",
-    "test:chromium": "playwright test --project=chromium",
-    "test:headed": "playwright test --headed",
-    "report": "playwright show-report",
-    "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "test:visual": "playwright test --project=visual",
+    "test:visual:update": "playwright test --project=visual --update-snapshots",
+    "test:performance": "playwright test --project=performance",
+    "test:lighthouse": "playwright test --project=performance --grep @lighthouse",
+    "test:perf:no-lighthouse": "playwright test --project=performance --grep-invert @lighthouse",
+    "report": "playwright show-report"
   },
   "keywords": [
     "playwright",
-    "typescript",
     "qa",
-    "e2e",
-    "automation"
+    "automation",
+    "visual-regression",
+    "performance"
   ],
-  "author": "Dimitar Kosev",
+  "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.0",
-    "eslint": "^10.3.0",
-    "eslint-plugin-playwright": "^2.10.2",
-    "prettier": "^3.8.3",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.1"
+    "lighthouse": "^12.2.0",
+    "playwright-lighthouse": "^4.0.0",
+    "typescript": "^6.0.3"
   }
 }
