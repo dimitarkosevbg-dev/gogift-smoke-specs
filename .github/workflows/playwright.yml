@@ -38,6 +38,9 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+        - name: Lint check
+        run: npm run lint
+
       - name: Run regression tests on ${{ matrix.project }}
         run: npx playwright test --grep @regression --project="${{ matrix.project }}"
         env:
