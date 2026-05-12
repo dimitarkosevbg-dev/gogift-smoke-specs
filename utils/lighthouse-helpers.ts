@@ -1,5 +1,4 @@
 import { Page, TestInfo } from '@playwright/test';
-import { playAudit } from 'playwright-lighthouse';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -24,6 +23,11 @@ export async function runLighthouse(
   label: string,
   thresholds: LighthouseThresholds = DEFAULT_LH_THRESHOLDS,
 ) {
+  // Dynamic import: playwright-lighthouse is an ESM-only package, so we can't
+  // statically `import` it from a CommonJS file. The dynamic import() returns
+  // a Promise and works in both module systems.
+  const { playAudit } = await import('playwright-lighthouse');
+
   const reportDir = path.join(testInfo.outputDir, 'lighthouse');
   fs.mkdirSync(reportDir, { recursive: true });
 

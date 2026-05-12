@@ -1,6 +1,6 @@
-import { test, expect } from '../../utils/test-fixtures';
+import { test } from '../../utils/test-fixtures';
 import { futureDate } from '../../utils/test-date';
-import { PRODUCTS, RECIPIENT, SEARCH_TERMS } from '../../fixtures/testData';
+import { PRODUCTS, RECIPIENT } from '../../fixtures/testData';
 
 test.describe('Product Page Regression Tests', () => {
   test.beforeEach(async ({ homePage, header, cookieBanner }) => {
@@ -18,6 +18,7 @@ test.describe('Product Page Regression Tests', () => {
   test('TC-085 | Gift card value can be selected', async ({ productPage }) => {
     await productPage.selectGiftCardValue('DKK 150');
   });
+
   test('TC-086 | Delivery method shows correct fields', async ({ productPage }) => {
     await productPage.selectDeliveryMethod('Email');
     await productPage.verifyEmailDeliveryFieldsVisible();

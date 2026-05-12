@@ -42,6 +42,10 @@ export default [
             'verifyProductIsVisible',
             'verifyCheckoutEntryAvailable',
             'verifyCheckoutFormVisible',
+            'snapshotFullPage', // visual regression assertion (full page)
+            'snapshotElement', // visual regression assertion (single element)
+            'assertWithinBudget', // performance budget assertion
+            'runLighthouse', // lighthouse audit + threshold check
           ],
         },
       ],
