@@ -164,16 +164,17 @@ export async function captureReport(
   const file = path.join(reportDir, `${label}.json`);
   fs.writeFileSync(file, JSON.stringify(report, null, 2));
   await testInfo.attach(`perf-${label}.json`, { path: file, contentType: 'application/json' });
-
+  /* eslint-disable no-console */
   console.log(`\n📊 Performance — ${label}`);
   console.log(`  LCP:  ${report.vitals.LCP} ms  (target ≤ ${THRESHOLDS.LCP_MS})`);
   console.log(`  FCP:  ${report.vitals.FCP} ms  (target ≤ ${THRESHOLDS.FCP_MS})`);
-  console.log(`  CLS:  ${report.vitals.CLS}    (target ≤ ${THRESHOLDS.CLS})`);
+  console.log(`  CLS:  ${report.vitals.CLS}     (target ≤ ${THRESHOLDS.CLS})`);
   console.log(`  TTFB: ${report.vitals.TTFB} ms (target ≤ ${THRESHOLDS.TTFB_MS})`);
   console.log(`  Load: ${report.navigation.loadComplete} ms`);
   console.log(
     `  Requests: ${report.resources.totalRequests}, ${report.resources.totalTransferKB} KB`,
   );
+  /* eslint-enable no-console */
 
   return report;
 }

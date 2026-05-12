@@ -1,4 +1,4 @@
-markdown# GoGift Shop - QA Automation Framework
+# GoGift Shop - QA Automation Framework
 
 [![Playwright Tests](https://github.com/dimitarkosevbg-dev/gogift-smoke-specs/actions/workflows/playwright.yml/badge.svg)](https://github.com/dimitarkosevbg-dev/gogift-smoke-specs/actions/workflows/playwright.yml)
 
@@ -22,6 +22,8 @@ The automation work demonstrates real-world QA engineering: dealing with Cloudfl
 ---
 
 ## Project Structure
+
+```text
 gogift-smoke-specs/
 ├── .github/
 │   └── workflows/
@@ -75,6 +77,7 @@ gogift-smoke-specs/
 ├── playwright.config.ts        # Multi-project config (6 projects total)
 ├── tsconfig.json
 └── package.json
+```
 
 ---
 
@@ -192,7 +195,7 @@ Each functional regression test runs against 4 projects:
 
 ## Mobile & Tablet Coverage
 
-This is one of the more interesting parts of the framework. shop.gogift.com renders three structurally different layouts depending on viewport - not just CSS resizing, but completely different DOM trees:
+This is one of the more interesting parts of the framework. shop.gogift.com renders three structurally different layouts depending on viewport — not just CSS resizing, but completely different DOM trees:
 
 - **Desktop** (≥1024px): horizontal nav row, directly visible search input, product form alongside the description.
 - **Mobile** (<768px): navigation collapsed behind a hamburger button (`aria-label="Menu"`) opening a ReactModal drawer; search hidden behind an icon-only button; product form hidden behind a sticky bottom "Choose" CTA which opens it in a ReactModal.

@@ -15,7 +15,12 @@
     "test:shard:1": "playwright test --grep @regression --shard=1/2",
     "test:shard:2": "playwright test --grep @regression --shard=2/2",
     "report": "playwright show-report",
-    "report:merge": "playwright merge-reports --reporter html ./all-blob-reports"
+    "report:merge": "playwright merge-reports --reporter html ./all-blob-reports",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "playwright",
@@ -29,10 +34,15 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@eslint/js": "^9.18.0",
     "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.0",
+    "eslint": "^9.18.0",
+    "eslint-plugin-playwright": "^2.2.0",
     "lighthouse": "^12.2.0",
     "playwright-lighthouse": "^4.0.0",
-    "typescript": "^6.0.3"
+    "prettier": "^3.4.2",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.20.0"
   }
 }
