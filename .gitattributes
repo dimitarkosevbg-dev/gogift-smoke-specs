@@ -1,0 +1,13 @@
+# Default behaviour: normalize line endings to LF on commit,
+# and check out as-is (no conversion). This makes the repo behave
+# identically on Windows, macOS, and Linux for all text files.
+* text=auto eol=lf
+
+# Explicit binary files — never normalize
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
