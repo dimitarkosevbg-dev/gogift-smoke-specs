@@ -110,7 +110,7 @@ Critical purchase flow up to checkout boundary: open homepage, search, open prod
 
 **Search** (6 tests): valid brand search, case insensitivity, leading/trailing whitespace, no-results scenario, exact match, click-through to product page.
 
-**Product Page** (4 tests): page load, gift card value selection, delivery method field switching (Email/SMS/Post), and DOM-unmount behaviour of the date selector when switching away from E-mail delivery (SMS/Post don't expose a date field).
+**Product Page** (4 tests): page load, gift card value selection, delivery method field switching (Email/SMS/Post), and end-to-end add-to-basket flow (TC-087: future delivery date, value selection, recipient details, add to basket, navigate to basket, verify product visible).
 
 **Basket** (4 tests): page load, product visibility, terms acceptance enables checkout, checkout entry availability.
 
