@@ -81,6 +81,10 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
+      - name: Install WebKit browser (cache may not include it)
+        if: steps.playwright-cache.outputs.cache-hit == 'true' && matrix.project == 'webkit'
+        run: npx playwright install webkit
+
       - name: Run regression tests (shard ${{ matrix.shard }}/2)
         run: npx playwright test --project="${{ matrix.project }}" --shard=${{ matrix.shard }}/2 --grep @regression
         env:

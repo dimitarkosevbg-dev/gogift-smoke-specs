@@ -4,7 +4,7 @@
 
 End-to-end test automation for [shop.gogift.com](https://shop.gogift.com) built with Playwright and TypeScript.
 
-This project pairs a structured [manual QA test suite](https://docs.google.com/spreadsheets/d/14mdxKIcPYD_1ZU9IFhaC9_uH20JfJy2w/edit?usp=sharing&ouid=113728637981988979355&rtpof=true&sd=true) (100+ test cases across 12 suites) with a production-style automation framework. The same test cases are covered across **four browser/device projects**: Chromium, Firefox, Mobile Chrome (Pixel 5), and iPad Mini, with each project further **split into 2 shards** for parallel execution — yielding **8 concurrent CI jobs** producing **96 individual test runs per full regression cycle**. The framework additionally runs a dedicated **visual regression suite** (10 snapshot tests) and a **performance benchmark suite** (Core Web Vitals + Lighthouse audits) on isolated Playwright projects.
+This project pairs a structured [manual QA test suite](https://docs.google.com/spreadsheets/d/14mdxKIcPYD_1ZU9IFhaC9_uH20JfJy2w/edit?usp=sharing&ouid=113728637981988979355&rtpof=true&sd=true) (100+ test cases across 12 suites) with a production-style automation framework. The same test cases are covered across five browser/device projects: Chromium, Firefox, WebKit (Desktop Safari), Mobile Chrome (Pixel 5), and iPad Mini, with each project further split into 2 shards for parallel execution — yielding **10 concurrent CI jobs** producing **96 individual test runs per full regression cycle**. The framework additionally runs a dedicated **visual regression suite** (10 snapshot tests) and a **performance benchmark suite** (Core Web Vitals + Lighthouse audits) on isolated Playwright projects.
 
 The automation work demonstrates real-world QA engineering: dealing with Cloudflare protection, dynamic React-based dropdowns, ReactModal drawers, responsive layouts that fundamentally restructure between desktop and mobile, hybrid tablet layouts that mix desktop and mobile patterns, re-appearing overlays that intercept clicks, and the practical challenges of stabilising pixel-level snapshots and capturing reliable Web Vitals on a third-party production site.
 
@@ -426,6 +426,8 @@ CI runs are configured to retry failed tests twice (configurable in `playwright.
 - **TTFB ~1000-1400 ms** reflects the geographical distance to gogift.com's Scandinavian infrastructure when measured from outside the region. Budget is set to account for this rather than aspirational <800 ms.
 - **Lighthouse Performance score varies ±10 points between runs** due to network jitter, CPU contention, and cache state. Thresholds account for this; CI should not gate merges on Lighthouse alone.
 - **Homepage CLS (0.172)** exceeds Google's "good" threshold. Documented as a known UX issue rather than masked — when the underlying lazy-loaded layout shift is fixed, the budget can be tightened.
+- **WebKit testing reflects engine, not OS**. Playwright's WebKit on Linux CI is the same engine that powers Safari on macOS/iOS, but font rendering, sandbox behaviour, and some Web APIs differ from a real Safari install.
+    A green WebKit job is good signal but not a substitute for manual smoke-testing on actual Apple devices before release.
 
 ---
 
@@ -433,7 +435,6 @@ CI runs are configured to retry failed tests twice (configurable in `playwright.
 
 - **API-layer tests**: bypass Cloudflare to validate checkout logic at the API tier; complement E2E with faster, more reliable backend coverage
 - **Accessibility audit suite**: `@axe-core/playwright` integration to systematically catch a11y issues across the application — would complement the per-page Lighthouse a11y scores with detailed rule-level findings
-- **WebKit coverage**: currently testing on Chromium and Firefox engines; adding WebKit (Safari) would cover the third major browser engine
 - **Mobile-viewport visual snapshots**: visual regression currently runs only on the 1280×800 desktop profile; adding mobile and tablet visual projects would catch responsive layout regressions
 - **Performance regression history**: persist per-run performance JSON to track trends over time rather than only enforcing per-run budgets
 - **Finer sharding**: at the current scale (~24 tests × 4 projects), 2-way sharding is the sweet spot. If the suite grows past ~50 tests per project, 4-way sharding becomes worthwhile
