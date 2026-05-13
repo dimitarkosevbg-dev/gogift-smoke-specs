@@ -47,6 +47,7 @@ jobs:
           - firefox
           - 'Mobile Chrome'
           - Tablet
+          - webkit
         shard: [1, 2]
     steps:
       - name: Checkout repository

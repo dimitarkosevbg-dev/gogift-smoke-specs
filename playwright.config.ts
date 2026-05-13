@@ -54,6 +54,11 @@ export default defineConfig({
       testIgnore: ['**/visual/**', '**/performance/**'],
       use: { ...devices['iPad Mini'] },
     },
+    {
+      name: 'webkit',
+      testIgnore: ['**/visual/**', '**/performance/**'],
+      use: { ...devices['Desktop Safari'] },
+    },
 
     // ─────────────────────────────────────────────
     // VISUAL REGRESSION
