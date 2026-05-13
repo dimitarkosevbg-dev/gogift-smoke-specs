@@ -113,7 +113,7 @@ export class ProductPage {
       try {
         await expect(optionLocator).toBeVisible({ timeout: 5_000 });
         await optionLocator.click();
-        break;
+        return;
       } catch {
         if (attempt === 3) {
           throw new Error(`Value dropdown option "${value}" was not selectable after 3 attempts`);
@@ -123,13 +123,16 @@ export class ProductPage {
         await this.page.waitForTimeout(300);
       }
     }
+  }
 
+  async verifyGiftCardValueSelected(value: string): Promise<void> {
     const numericValue = value.match(/\d+/)?.[0];
-    if (numericValue) {
-      await expect(this.page.locator('input[name="AutoSuggestOption"]').first()).toHaveValue(
-        new RegExp(numericValue),
-      );
+    if (!numericValue) {
+      throw new Error(`Cannot verify selected value: "${value}" contains no numeric portion`);
     }
+    await expect(this.page.locator('input[name="AutoSuggestOption"]').first()).toHaveValue(
+      new RegExp(numericValue),
+    );
   }
 
   async fillRecipientName(name: string): Promise<void> {
