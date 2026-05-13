@@ -17,6 +17,7 @@ test.describe('Product Page Regression Tests', () => {
 
   test('TC-085 | Gift card value can be selected', async ({ productPage }) => {
     await productPage.selectGiftCardValue('DKK 150');
+    await productPage.verifyGiftCardValueSelected('DKK 150');
   });
 
   test('TC-086 | Delivery method shows correct fields', async ({ productPage }) => {

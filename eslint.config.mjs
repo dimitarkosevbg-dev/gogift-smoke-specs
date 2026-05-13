@@ -46,6 +46,7 @@ export default [
             'snapshotElement', // visual regression assertion (single element)
             'assertWithinBudget', // performance budget assertion
             'runLighthouse', // lighthouse audit + threshold check
+            'verifyGiftCardValueSelected', // gift card value selection assertion
           ],
         },
       ],
