@@ -359,7 +359,7 @@ npx playwright test --ui
 
 ## Continuous Integration
 
-The project runs on **GitHub Actions** with a **2-way sharded matrix strategy**: each of the 5 functional Playwright projects (chromium, firefox, Mobile Chrome, Tablet, webkit) is split into 2 shards via `--shard=N/M`, yielding **10 parallel jobs**. A separate `merge-reports` job consolidates all shard outputs into a single HTML report. Total CI time is around **~5 minutes** for the full 96-run regression cycle — roughly half the wall-clock time of the unsharded baseline.
+The project runs on **GitHub Actions** with a **2-way sharded matrix strategy**: each of the 5 functional Playwright projects (chromium, firefox, Mobile Chrome, Tablet, webkit) is split into 2 shards via `--shard=N/M`, yielding **10 parallel jobs**. A separate `merge-reports` job consolidates all shard outputs into a single HTML report. Total CI time is around **~1.5–2.5 min** for the full 96-run regression cycle — roughly half the wall-clock time of the unsharded baseline.
 
 Workflow triggers:
 
