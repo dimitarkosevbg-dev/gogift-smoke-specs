@@ -4,7 +4,7 @@
 
 End-to-end test automation for [shop.gogift.com](https://shop.gogift.com) built with Playwright and TypeScript.
 
-This project pairs a structured [manual QA test suite](https://docs.google.com/spreadsheets/d/14mdxKIcPYD_1ZU9IFhaC9_uH20JfJy2w/edit?usp=sharing&ouid=113728637981988979355&rtpof=true&sd=true) (100+ test cases across 12 suites) with a production-style automation framework. The same test cases are covered across five browser/device projects: Chromium, Firefox, WebKit (Desktop Safari), Mobile Chrome (Pixel 5), and iPad Mini, with each project further split into 2 shards for parallel execution — yielding **10 concurrent CI jobs** producing **96 individual test runs per full regression cycle**. The framework additionally runs a dedicated **visual regression suite** (10 snapshot tests) and a **performance benchmark suite** (Core Web Vitals + Lighthouse audits) on isolated Playwright projects.
+This project pairs a structured [manual QA test suite](https://docs.google.com/spreadsheets/d/14mdxKIcPYD_1ZU9IFhaC9_uH20JfJy2w/edit?usp=sharing&ouid=113728637981988979355&rtpof=true&sd=true) (100+ test cases across 12 suites) with a production-style automation framework. The same test cases are covered across six browser/device projects: Chromium, Firefox, WebKit (Desktop Safari), Mobile Chrome (Pixel 5), iPad Mini, and Mobile Safari (iPhone 13), with each project further split into 2 shards for parallel execution — yielding **12 concurrent CI jobs** . The framework additionally runs a dedicated **visual regression suite** (10 snapshot tests) and a **performance benchmark suite** (Core Web Vitals + Lighthouse audits) on isolated Playwright projects.
 
 The automation work demonstrates real-world QA engineering: dealing with Cloudflare protection, dynamic React-based dropdowns, ReactModal drawers, responsive layouts that fundamentally restructure between desktop and mobile, hybrid tablet layouts that mix desktop and mobile patterns, re-appearing overlays that intercept clicks, and the practical challenges of stabilising pixel-level snapshots and capturing reliable Web Vitals on a third-party production site.
 
@@ -266,6 +266,7 @@ Six Playwright projects, each configured for its purpose:
 | `firefox`      | `tests/` (no visual/perf) | Desktop Firefox    | Functional cross-engine coverage                     |
 | `Mobile Chrome`| `tests/` (no visual/perf) | Pixel 5            | Mobile layout coverage                               |
 | `Tablet`       | `tests/` (no visual/perf) | iPad Mini          | Tablet hybrid layout coverage                        |
+| `Mobile Safari`| `tests/` (no visual/perf) | iPhone 13          | iOS Safari engine + touch events + mobile viewport   |
 | `visual`       | `tests/visual/`           | Chrome 1280×800    | Deterministic snapshots, reduced motion              |
 | `performance`  | `tests/performance/`      | Chrome + port 9222 | Single worker, no retries, Lighthouse-compatible     |
 
@@ -359,7 +360,7 @@ npx playwright test --ui
 
 ## Continuous Integration
 
-The project runs on **GitHub Actions** with a **2-way sharded matrix strategy**: each of the 5 functional Playwright projects (chromium, firefox, Mobile Chrome, Tablet, webkit) is split into 2 shards via `--shard=N/M`, yielding **10 parallel jobs**. A separate `merge-reports` job consolidates all shard outputs into a single HTML report. Total CI time is around **~1.5–2.5 min** for the full 96-run regression cycle — roughly half the wall-clock time of the unsharded baseline.
+The project runs on **GitHub Actions** with a **2-way sharded matrix strategy**: each of the 6 functional Playwright projects (chromium, firefox, Mobile Chrome, Mobile Safari, Tablet, webkit) is split into 2 shards via `--shard=N/M`, yielding **12 parallel jobs**. A separate `merge-reports` job consolidates all shard outputs into a single HTML report. Total CI time is around **~1.5–2.5 min** for the full 96-run regression cycle — roughly half the wall-clock time of the unsharded baseline.
 
 Workflow triggers:
 
