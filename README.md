@@ -359,7 +359,7 @@ npx playwright test --ui
 
 ## Continuous Integration
 
-The project runs on **GitHub Actions** with a **2-way sharded matrix strategy**: each of the 4 functional Playwright projects (chromium, firefox, Mobile Chrome, Tablet) is split into 2 shards via `--shard=N/M`, yielding **8 parallel jobs**. A separate `merge-reports` job consolidates all shard outputs into a single HTML report. Total CI time is around **~5 minutes** for the full 96-run regression cycle — roughly half the wall-clock time of the unsharded baseline.
+The project runs on **GitHub Actions** with a **2-way sharded matrix strategy**: each of the 5 functional Playwright projects (chromium, firefox, Mobile Chrome, Tablet, webkit) is split into 2 shards via `--shard=N/M`, yielding **10 parallel jobs**. A separate `merge-reports` job consolidates all shard outputs into a single HTML report. Total CI time is around **~1.5–2.5 min** for the full 96-run regression cycle — roughly half the wall-clock time of the unsharded baseline.
 
 Workflow triggers:
 
@@ -370,11 +370,12 @@ Workflow triggers:
 CI flow per matrix job:
 
 1. Checkout repository
-2. Install Node.js and project dependencies
-3. Install Playwright browsers
-4. Run regression tests for the assigned **project + shard** combination
-5. Upload **blob report fragment** as an artifact
-6. On failure, also upload raw `test-results/` (screenshots, videos, traces)
+2. Install project dependencies (`npm ci`)
+3. Run regression tests for the assigned **project + shard** combination
+4. Upload **blob report fragment** as an artifact
+5. On failure, also upload raw `test-results/` (screenshots, videos, traces)
+
+All three jobs (`quality-check`, `test`, `merge-reports`) run inside the official **`mcr.microsoft.com/playwright:v1.59.1-noble`** container image, which ships pre-installed Node.js, Chromium, Firefox, WebKit, and all required system libraries. This removes the browser-install step entirely — previously the slowest and most failure-prone part of the pipeline, occasionally taking 30+ minutes and timing out — and pins the CI environment to a single reproducible base image shared across all jobs. The Playwright version in the image tag is kept in sync with the `@playwright/test` version in `package.json`.
 
 After all 8 shard jobs complete, the `merge-reports` job downloads all blob fragments, runs `playwright merge-reports --reporter html`, and uploads a single consolidated HTML report as a `playwright-report` artifact (retained 30 days). Failure artifacts are retained 7 days.
 
@@ -433,7 +434,8 @@ CI runs are configured to retry failed tests twice (configurable in `playwright.
 
 ## Future Improvements
 
-- **API-layer tests**: bypass Cloudflare to validate checkout logic at the API tier; complement E2E with faster, more reliable backend coverage
+## Future Improvements
+
 - **Accessibility audit suite**: `@axe-core/playwright` integration to systematically catch a11y issues across the application — would complement the per-page Lighthouse a11y scores with detailed rule-level findings
 - **Mobile-viewport visual snapshots**: visual regression currently runs only on the 1280×800 desktop profile; adding mobile and tablet visual projects would catch responsive layout regressions
 - **Performance regression history**: persist per-run performance JSON to track trends over time rather than only enforcing per-run budgets
