@@ -4,7 +4,7 @@
 
 End-to-end test automation for [shop.gogift.com](https://shop.gogift.com) built with Playwright and TypeScript.
 
-This project pairs a structured [manual QA test suite](https://docs.google.com/spreadsheets/d/14mdxKIcPYD_1ZU9IFhaC9_uH20JfJy2w/edit?usp=sharing&ouid=113728637981988979355&rtpof=true&sd=true) (100+ test cases across 12 suites) with a production-style automation framework. The same test cases are covered across six browser/device projects: Chromium, Firefox, WebKit (Desktop Safari), Mobile Chrome (Pixel 5), iPad Mini, and Mobile Safari (iPhone 13), with each project further split into 2 shards for parallel execution — yielding **12 concurrent CI jobs** . The framework additionally runs a dedicated **visual regression suite** (10 snapshot tests) and a **performance benchmark suite** (Core Web Vitals + Lighthouse audits) on isolated Playwright projects.
+This project pairs a structured [manual QA test suite](https://docs.google.com/spreadsheets/d/14mdxKIcPYD_1ZU9IFhaC9_uH20JfJy2w/edit?usp=sharing&ouid=113728637981988979355&rtpof=true&sd=true) (100+ test cases across 12 suites) with a production-style automation framework. The same test cases are covered across six browser/device projects: Chromium, Firefox, WebKit (Desktop Safari), Mobile Chrome (Pixel 5), iPad Mini, and Mobile Safari (iPhone 13), with each project further split into 2 shards for parallel execution — yielding **12 concurrent CI jobs**. The framework additionally runs a dedicated **visual regression suite** (10 snapshot tests) and a **performance benchmark suite** (Core Web Vitals + Lighthouse audits) on isolated Playwright projects.
 
 The automation work demonstrates real-world QA engineering: dealing with Cloudflare protection, dynamic React-based dropdowns, ReactModal drawers, responsive layouts that fundamentally restructure between desktop and mobile, hybrid tablet layouts that mix desktop and mobile patterns, re-appearing overlays that intercept clicks, and the practical challenges of stabilising pixel-level snapshots and capturing reliable Web Vitals on a third-party production site.
 
@@ -27,7 +27,7 @@ The automation work demonstrates real-world QA engineering: dealing with Cloudfl
 gogift-smoke-specs/
 ├── .github/
 │   └── workflows/
-│       └── playwright.yml      # GitHub Actions CI — 4 projects × 2 shards + merge job
+│       └── playwright.yml      # GitHub Actions CI — 6 projects × 2 shards + merge job
 ├── .vscode/
 │   └── settings.json           # Workspace settings (format on save, ESLint integration)
 ├── components/                 # Reusable UI components
@@ -180,16 +180,18 @@ Current baseline (May 2026):
 
 ### Cross-browser × cross-device matrix
 
-Each functional regression test runs against 4 projects:
+Each functional regression test runs against 6 projects:
 
-| Project        | Viewport          | Layout Mode  | Notes                                |
-|----------------|-------------------|--------------|--------------------------------------|
-| Chromium       | 1280×720          | desktop      | Desktop reference                    |
-| Firefox        | 1280×720          | desktop      | Desktop cross-engine                 |
-| Mobile Chrome  | 393×851 (Pixel 5) | mobile       | Hamburger drawer, modal product form |
-| Tablet         | 768×1024 (iPad)   | tablet       | Hybrid: desktop nav + icon search    |
+| Project        | Viewport            | Layout Mode  | Notes                                                                 |
+|----------------|---------------------|--------------|-----------------------------------------------------------------------|
+| Chromium       | 1280×720            | desktop      | Desktop reference                                                     |
+| Firefox        | 1280×720            | desktop      | Desktop cross-engine                                                  |
+| WebKit         | 1280×720            | desktop      | Desktop WebKit / Safari engine                                        |
+| Mobile Chrome  | 393×851 (Pixel 5)   | mobile       | Hamburger drawer, modal product form                                  |
+| Mobile Safari  | 390×844 (iPhone 13) | mobile       | iOS WebKit + touch (homepage / nav / search only — see Known Limitations) |
+| Tablet         | 768×1024 (iPad)     | tablet       | Hybrid: desktop nav + icon search                                     |
 
-**Total: 24 tests × 4 projects = 96 functional runs per regression cycle**, plus **10 visual snapshots** + **5 performance benchmarks** on dedicated single-browser projects.
+**Total: 24 tests × 6 projects = 144 functional runs per regression cycle** (minus 6 skipped on Mobile Safari = **138 effective runs**), plus **10 visual snapshots** + **5 performance benchmarks** on dedicated single-browser projects.
 
 ---
 
@@ -258,19 +260,20 @@ Tests stay clean and viewport-agnostic. They call `verifyHeaderVisible()` and th
 
 ## Playwright Projects Architecture
 
-Six Playwright projects, each configured for its purpose:
+Six functional Playwright projects plus two specialized ones, each configured for its purpose:
 
 | Project        | Folder                | Browser                | Why these settings                                   |
 |----------------|-----------------------|------------------------|------------------------------------------------------|
 | `chromium`     | `tests/` (no visual/perf) | Desktop Chrome     | Functional cross-browser reference                   |
 | `firefox`      | `tests/` (no visual/perf) | Desktop Firefox    | Functional cross-engine coverage                     |
+| `webkit`       | `tests/` (no visual/perf) | Desktop Safari     | Desktop WebKit engine coverage                       |
 | `Mobile Chrome`| `tests/` (no visual/perf) | Pixel 5            | Mobile layout coverage                               |
+| `Mobile Safari`| `tests/` (no visual/perf) | iPhone 13          | iOS WebKit + touch (partial — see Known Limitations) |
 | `Tablet`       | `tests/` (no visual/perf) | iPad Mini          | Tablet hybrid layout coverage                        |
-| `Mobile Safari`| `tests/` (no visual/perf) | iPhone 13          | iOS Safari engine + touch events + mobile viewport   |
 | `visual`       | `tests/visual/`           | Chrome 1280×800    | Deterministic snapshots, reduced motion              |
 | `performance`  | `tests/performance/`      | Chrome + port 9222 | Single worker, no retries, Lighthouse-compatible     |
 
-Functional projects use `testIgnore` for `visual/` and `performance/` folders, so `npm test` doesn't accidentally run snapshots on Firefox (where they'd diverge from the Chromium baseline) or measure Web Vitals four times in parallel (which would invalidate the numbers).
+Functional projects use `testIgnore` for `visual/` and `performance/` folders, so `npm test` doesn't accidentally run snapshots on Firefox (where they'd diverge from the Chromium baseline) or measure Web Vitals multiple times in parallel (which would invalidate the numbers).
 
 ---
 
@@ -297,7 +300,7 @@ The last step downloads Playwright's bundled browsers (Chromium, Firefox, WebKit
 ## Running Tests
 
 ```bash
-npm test                          # Full functional suite, all 4 device projects, parallel
+npm test                          # Full functional suite, all device projects, parallel
 npm run test:smoke                # Smoke suite only
 npm run test:regression           # Functional regression suite only
 npm run test:chromium             # Chromium project only
@@ -360,7 +363,7 @@ npx playwright test --ui
 
 ## Continuous Integration
 
-The project runs on **GitHub Actions** with a **2-way sharded matrix strategy**: each of the 6 functional Playwright projects (chromium, firefox, Mobile Chrome, Mobile Safari, Tablet, webkit) is split into 2 shards via `--shard=N/M`, yielding **12 parallel jobs**. A separate `merge-reports` job consolidates all shard outputs into a single HTML report. Total CI time is around **~1.5–2.5 min** for the full 96-run regression cycle — roughly half the wall-clock time of the unsharded baseline.
+The project runs on **GitHub Actions** with a **2-way sharded matrix strategy**: each of the 6 functional Playwright projects (chromium, firefox, Mobile Chrome, Mobile Safari, Tablet, webkit) is split into 2 shards via `--shard=N/M`, yielding **12 parallel jobs**. A separate `merge-reports` job consolidates all shard outputs into a single HTML report. Total CI time is around **~1.5–2.5 min** for the full regression cycle — roughly half the wall-clock time of the unsharded baseline.
 
 Workflow triggers:
 
@@ -378,7 +381,7 @@ CI flow per matrix job:
 
 All three jobs (`quality-check`, `test`, `merge-reports`) run inside the official **`mcr.microsoft.com/playwright:v1.59.1-noble`** container image, which ships pre-installed Node.js, Chromium, Firefox, WebKit, and all required system libraries. This removes the browser-install step entirely — previously the slowest and most failure-prone part of the pipeline, occasionally taking 30+ minutes and timing out — and pins the CI environment to a single reproducible base image shared across all jobs. The Playwright version in the image tag is kept in sync with the `@playwright/test` version in `package.json`.
 
-After all 8 shard jobs complete, the `merge-reports` job downloads all blob fragments, runs `playwright merge-reports --reporter html`, and uploads a single consolidated HTML report as a `playwright-report` artifact (retained 30 days). Failure artifacts are retained 7 days.
+After all 12 shard jobs complete, the `merge-reports` job downloads all blob fragments, runs `playwright merge-reports --reporter html`, and uploads a single consolidated HTML report as a `playwright-report` artifact (retained 30 days). Failure artifacts are retained 7 days.
 
 The reporter is **context-aware** in `playwright.config.ts`: CI uses `'blob'` so shard fragments can be merged; local runs use `'html'` for the normal interactive flow.
 
@@ -389,7 +392,7 @@ CI configuration: `.github/workflows/playwright.yml`.
 The `main` branch is protected with the following rules:
 
 - **Require a pull request before merging** — no direct pushes to `main`
-- **Require status checks to pass before merging** — all 8 shard jobs + `merge-reports` must succeed
+- **Require status checks to pass before merging** — all 12 shard jobs + `merge-reports` must succeed
 - **Require branches to be up to date before merging** — PRs must rebase or merge `main` if it has advanced
 - **Block force pushes** — `git push --force` is rejected
 - **Restrict deletions** — the branch cannot be accidentally deleted
@@ -428,19 +431,17 @@ CI runs are configured to retry failed tests twice (configurable in `playwright.
 - **TTFB ~1000-1400 ms** reflects the geographical distance to gogift.com's Scandinavian infrastructure when measured from outside the region. Budget is set to account for this rather than aspirational <800 ms.
 - **Lighthouse Performance score varies ±10 points between runs** due to network jitter, CPU contention, and cache state. Thresholds account for this; CI should not gate merges on Lighthouse alone.
 - **Homepage CLS (0.172)** exceeds Google's "good" threshold. Documented as a known UX issue rather than masked — when the underlying lazy-loaded layout shift is fixed, the budget can be tightened.
-- **WebKit testing reflects engine, not OS**. Playwright's WebKit on Linux CI is the same engine that powers Safari on macOS/iOS, but font rendering, sandbox behaviour, and some Web APIs differ from a real Safari install.
-    A green WebKit job is good signal but not a substitute for manual smoke-testing on actual Apple devices before release.
+- **WebKit testing reflects engine, not OS**. Playwright's WebKit on Linux CI is the same engine that powers Safari on macOS/iOS, but font rendering, sandbox behaviour, and some Web APIs differ from a real Safari install. A green WebKit job is good signal but not a substitute for manual smoke-testing on actual Apple devices before release.
+- **Mobile Safari product-flow coverage is partial.** 6 regression tests (TC-089, TC-090, TC-094, TC-095, TC-096, TC-097) are skipped on the `Mobile Safari` project because `shop.gogift.com` uses User-Agent and browser-fingerprint pattern matching on the product page to choose between a "Choose → value-selection modal" flow and a simplified "Add to basket" direct flow. Recognized real iOS Safari clients see the modal; Playwright WebKit on Linux (CI Docker) falls outside the recognized pattern and receives the direct flow, so the "Choose" button is not rendered in the DOM and the test's mobile product flow cannot complete. Reproduced and documented in the project bug report; not fixable from the test side without paid real-device infrastructure. Mobile Safari still validates WebKit-engine behaviour on the 16 non-product-flow regression tests (homepage, navigation, search).
 
 ---
-
-## Future Improvements
 
 ## Future Improvements
 
 - **Accessibility audit suite**: `@axe-core/playwright` integration to systematically catch a11y issues across the application — would complement the per-page Lighthouse a11y scores with detailed rule-level findings
 - **Mobile-viewport visual snapshots**: visual regression currently runs only on the 1280×800 desktop profile; adding mobile and tablet visual projects would catch responsive layout regressions
 - **Performance regression history**: persist per-run performance JSON to track trends over time rather than only enforcing per-run budgets
-- **Finer sharding**: at the current scale (~24 tests × 4 projects), 2-way sharding is the sweet spot. If the suite grows past ~50 tests per project, 4-way sharding becomes worthwhile
+- **Finer sharding**: at the current scale (~24 tests × 6 projects), 2-way sharding is the sweet spot. If the suite grows past ~50 tests per project, 4-way sharding becomes worthwhile
 
 ---
 
