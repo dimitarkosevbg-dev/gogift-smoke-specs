@@ -1,8 +1,20 @@
 import { test } from '../../utils/test-fixtures';
 import { PRODUCTS, RECIPIENT, SEARCH_TERMS } from '../../fixtures/testData';
 
+// KNOWN ISSUE — Mobile Safari product-flow coverage gap.
+// Same root cause as basket regression suite: gogift's mobile product
+// page does UA/fingerprint pattern matching, Playwright WebKit on Linux
+// (CI) falls outside the recognized pattern and receives a degraded
+// CTA flow without the "Choose" → value-selection modal. Reproduced
+// and documented in the project's bug report.
 test.describe('@regression Checkout Regression Tests', () => {
-  test.beforeEach(async ({ homePage, header, productPage, basketPage, cookieBanner }) => {
+  test.beforeEach(async ({ homePage, header, productPage, basketPage, cookieBanner }, testInfo) => {
+    // eslint-disable-next-line playwright/no-skipped-test -- intentional project-scoped skip; see file-header KNOWN ISSUE
+    test.skip(
+      testInfo.project.name === 'Mobile Safari',
+      'Mobile Safari skipped — gogift UA discrimination hides Choose button. See README → Known Limitations.',
+    );
+
     await homePage.open();
     await cookieBanner.acceptAllCookies();
 

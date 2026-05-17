@@ -50,6 +50,16 @@ export default defineConfig({
       use: { ...devices['Pixel 5'] },
     },
     {
+      name: 'Mobile Chrome',
+      testIgnore: ['**/visual/**', '**/performance/**'],
+      use: { ...devices['Pixel 5'] },
+    },
+    {
+      name: 'Mobile Safari',
+      testIgnore: ['**/visual/**', '**/performance/**'],
+      use: { ...devices['iPhone 13'] },
+    },
+    {
       name: 'Tablet',
       testIgnore: ['**/visual/**', '**/performance/**'],
       use: { ...devices['iPad Mini'] },
